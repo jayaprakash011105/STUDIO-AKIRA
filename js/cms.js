@@ -6,6 +6,27 @@ class ContentManagementSystem {
         this.content = null;
         this.theme = null;
         this.settings = null;
+        this.baseUrl = this.calculateBaseUrl();
+    }
+
+    // Determine the base path adjustment needed based on current page location
+    calculateBaseUrl() {
+        const path = window.location.pathname;
+        if (path.includes('/customer/') || path.includes('/admin/') || path.includes('/manufacturer/') || path.includes('/delivery/')) {
+            return '../';
+        }
+        return '';
+    }
+
+    // Adjust relative paths based on the page location
+    fixPath(path) {
+        if (!path) return '';
+        // If it's already an absolute URL or starts with /, don't touch it
+        if (path.startsWith('http') || path.startsWith('/') || path.startsWith('data:')) {
+            return path;
+        }
+        // Apply the base URL adjustment
+        return this.baseUrl + path;
     }
 
     // Initialize CMS and load all content
@@ -14,11 +35,27 @@ class ContentManagementSystem {
             await this.loadSettings();
             await this.loadTheme();
             await this.loadContent();
+            await this.loadNavigation();
             this.applyTheme();
             return true;
         } catch (error) {
             console.error('CMS Initialization Error:', error);
             return false;
+        }
+    }
+
+    // Load global navigation
+    async loadNavigation() {
+        try {
+            const navDoc = await db.collection('websiteContent').doc('navigation').get();
+            if (navDoc.exists) {
+                this.navigation = navDoc.data().links || [];
+            } else {
+                this.navigation = this.getDefaultNavigation();
+            }
+        } catch (error) {
+            console.error('Error loading navigation:', error);
+            this.navigation = this.getDefaultNavigation();
         }
     }
 
@@ -61,20 +98,22 @@ class ContentManagementSystem {
         }
     }
 
-    // Load homepage content
-    async loadContent() {
+    // Load page-specific content
+    async loadContent(pageId = 'homepage') {
         try {
-            const contentDoc = await db.collection('websiteContent').doc('homepage').get();
+            const contentDoc = await db.collection('websiteContent').doc(pageId).get();
 
             if (contentDoc.exists) {
                 this.content = contentDoc.data();
             } else {
                 // Default content structure
-                this.content = this.getDefaultContent();
+                this.content = this.getDefaultContent(pageId);
             }
+            return this.content;
         } catch (error) {
-            console.error('Error loading content:', error);
-            this.content = this.getDefaultContent();
+            console.error(`Error loading content for ${pageId}:`, error);
+            this.content = this.getDefaultContent(pageId);
+            return this.content;
         }
     }
 
@@ -87,6 +126,7 @@ class ContentManagementSystem {
 
         // Apply color variables
         Object.keys(colors).forEach(key => {
+            console.log(`CMS: Applying color --${key} = ${colors[key]}`);
             root.style.setProperty(`--${key}`, colors[key]);
         });
 
@@ -160,10 +200,10 @@ class ContentManagementSystem {
                             <h1 class="hero-main-title">${data.title || 'studio<br>akira'}</h1>
                             <p class="hero-main-tagline">${data.tagline || 'Where light becomes ritual.'}</p>
                             <p class="hero-main-description">${data.description || 'Handcrafted luxury candles that transform your space into a sanctuary'}</p>
-                            <a href="${data.buttonLink || 'customer/products.html'}" class="btn btn-primary btn-pill btn-large">${data.buttonText || 'Explore Collections'}</a>
+                            <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-primary btn-pill btn-large">${data.buttonText || 'Explore Collections'}</a>
                         </div>
                         <div class="hero-main-image">
-                            <img src="${data.image || 'assets/images/banners/Copilot_20260107_162550.png'}" alt="${data.imageAlt || 'Studio Akira Candles'}">
+                            <img src="${this.fixPath(data.image || 'assets/images/banners/Copilot_20260107_162550.png')}" alt="${data.imageAlt || 'Studio Akira Candles'}">
                         </div>
                     </div>
                 </div>
@@ -174,9 +214,9 @@ class ContentManagementSystem {
     renderCollectionsSection(data) {
         const collections = data.collections || [];
         const collectionsHTML = collections.map(col => `
-            <div class="benefit-card" style="cursor: pointer;" onclick="window.location.href='${col.link || 'customer/products.html'}'">
+            <div class="benefit-card" style="cursor: pointer;" onclick="window.location.href='${this.fixPath(col.link || 'customer/products.html')}'">
                 <div class="benefit-image">
-                    <img src="${col.image}" alt="${col.title}">
+                    <img src="${this.fixPath(col.image)}" alt="${col.title}">
                 </div>
                 <h3 class="benefit-title">${col.title}</h3>
                 <p class="benefit-text">${col.description}</p>
@@ -194,7 +234,7 @@ class ContentManagementSystem {
                         ${collectionsHTML}
                     </div>
                     <div class="text-center" style="margin-top: var(--spacing-xl);">
-                        <a href="${data.buttonLink || 'customer/products.html'}" class="btn btn-primary btn-large">${data.buttonText || 'View All Products'}</a>
+                        <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-primary btn-large">${data.buttonText || 'View All Products'}</a>
                     </div>
                 </div>
             </section>
@@ -210,10 +250,10 @@ class ContentManagementSystem {
                             <p class="section-label" style="color: var(--color-sage-dark);">${data.label || 'BEST SELLERS'}</p>
                             <h2 class="featured-collection-title">${data.title || 'Most Loved'}</h2>
                             <p class="featured-collection-text">${data.description || 'Our most chosen candles — trusted, gifted, and returned to again and again.'}</p>
-                            <a href="${data.buttonLink || 'customer/products.html'}" class="btn btn-primary btn-large">${data.buttonText || 'Shop Best Sellers'}</a>
+                            <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-primary btn-large">${data.buttonText || 'Shop Best Sellers'}</a>
                         </div>
                         <div class="featured-collection-image">
-                            <img src="${data.image || 'assets/images/banners/hero.png'}" alt="${data.imageAlt || 'Best Sellers Collection'}">
+                            <img src="${this.fixPath(data.image || 'assets/images/banners/hero.png')}" alt="${data.imageAlt || 'Best Sellers Collection'}">
                         </div>
                     </div>
                 </div>
@@ -275,13 +315,13 @@ class ContentManagementSystem {
                 <div class="container">
                     <div class="featured-collection-grid">
                         <div class="featured-collection-image">
-                            <img src="${data.image || 'assets/images/banners/hero.png'}" alt="${data.imageAlt || 'Luxury Gift Sets'}">
+                            <img src="${this.fixPath(data.image || 'assets/images/banners/hero.png')}" alt="${data.imageAlt || 'Luxury Gift Sets'}">
                         </div>
                         <div class="featured-collection-content">
                             <p class="section-label" style="color: var(--color-sage-dark);">${data.label || 'GIFTING'}</p>
                             <h2 class="featured-collection-title">${data.title || 'Gifts That Glow Longer'}</h2>
                             <p class="featured-collection-text">${data.description || 'Our luxury gift boxes are thoughtfully curated to celebrate moments, emotions, and connections.'}</p>
-                            <a href="${data.buttonLink || 'customer/products.html'}" class="btn btn-primary btn-large">${data.buttonText || 'Shop Gift Sets'}</a>
+                            <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-primary btn-large">${data.buttonText || 'Shop Gift Sets'}</a>
                         </div>
                     </div>
                 </div>
@@ -324,7 +364,7 @@ class ContentManagementSystem {
                         ${reviewsHTML}
                     </div>
                     <div style="text-align: center; margin-top: var(--spacing-xl);">
-                        <a href="${data.buttonLink || 'customer/products.html'}" class="btn btn-secondary btn-large">${data.buttonText || 'Read All Reviews'}</a>
+                        <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-secondary btn-large">${data.buttonText || 'Read All Reviews'}</a>
                     </div>
                 </div>
             </section>
@@ -363,7 +403,26 @@ class ContentManagementSystem {
     }
 
     // Default content structure
-    getDefaultContent() {
+    getDefaultContent(pageId = 'homepage') {
+        if (pageId === 'about') {
+            return {
+                sections: [
+                    {
+                        id: 'about_hero',
+                        type: 'hero',
+                        order: 1,
+                        active: true,
+                        data: {
+                            title: 'Our Story',
+                            tagline: 'Crafting light, warmth, and serenity.',
+                            description: 'Studio Akira began with a simple belief: that the objects we surround ourselves with effectively shape our daily rituals.',
+                            image: 'assets/images/banners/hero.png'
+                        }
+                    }
+                ]
+            };
+        }
+
         return {
             sections: [
                 {
@@ -383,6 +442,34 @@ class ContentManagementSystem {
                 }
             ]
         };
+    }
+
+    // Render navigation links to all menu containers
+    renderNavigation(containerSelector = '.navbar-menu') {
+        const containers = document.querySelectorAll(containerSelector);
+        if (!containers.length) return;
+
+        const navHTML = this.navigation.map(link => {
+            const path = this.fixPath(link.url);
+            // Handle special onclick actions if any (like requireLogin)
+            const onclick = link.action ? `onclick="${link.action}; return false;"` : '';
+            return `<li><a href="${path}" class="navbar-link" ${onclick}>${link.label}</a></li>`;
+        }).join('');
+
+        containers.forEach(container => {
+            container.innerHTML = navHTML;
+        });
+    }
+
+    // Default navigation structure
+    getDefaultNavigation() {
+        return [
+            { label: 'Home', url: 'index.html' },
+            { label: 'Collections', url: '#', action: "requireLogin('collections')" },
+            { label: 'About', url: 'about.html' },
+            { label: 'Contact', url: 'contact.html' },
+            { label: 'Orders', url: '#', action: "requireLogin('orders')" }
+        ];
     }
 }
 

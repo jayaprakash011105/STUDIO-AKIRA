@@ -121,72 +121,39 @@
         </div>
     </nav>
 
-    <!-- About Header -->
-    <section class="about-header">
-        <div class="container">
-            <h1 style="font-size: 3.5rem; color: var(--color-sage-darker); margin-bottom: 20px;">Our Story</h1>
-            <p style="font-size: 1.2rem; color: var(--color-text-light); max-width: 600px; margin: 0 auto;">
-                Crafting light, warmth, and serenity for your sanctuary.
-            </p>
-        </div>
-    </section>
+    <!-- Dynamic Content Area -->
+    <div id="cms-content">
+        <!-- About Header -->
+        <section class="about-header">
+            <div class="container">
+                <h1 style="font-size: 3.5rem; color: var(--color-sage-darker); margin-bottom: 20px;">Our Story</h1>
+                <p style="font-size: 1.2rem; color: var(--color-text-light); max-width: 600px; margin: 0 auto;">
+                    Crafting light, warmth, and serenity for your sanctuary.
+                </p>
+            </div>
+        </section>
 
-    <!-- Story Section -->
-    <section class="story-section">
-        <div class="container">
-            <div class="story-grid">
-                <div class="story-content">
-                    <p class="section-label">WHO WE ARE</p>
-                    <h2 class="section-title" style="text-align: left;">The Art of Slow Living</h2>
-                    <p style="margin-bottom: 20px; line-height: 1.8;">
-                        Studio Akira began with a simple belief: that the objects we surround ourselves with effectively
-                        shape our daily rituals. What started as a small passion project has grown into a dedicated
-                        atelier crafting premium, sustainable candles.
-                    </p>
-                    <p style="margin-bottom: 20px; line-height: 1.8;">
-                        Our candles are more than just wax and wick. They are designed to be an experience—a visual and
-                        olfactory journey that helps you reconnect with yourself and your space.
-                    </p>
-                    <p style="line-height: 1.8;">
-                        We use only 100% natural soy wax, lead-free cotton wicks, and premium essential oils to ensure a
-                        clean, long-lasting burn that is safe for you and the environment.
-                    </p>
-                </div>
-                <div class="story-image">
-                    <img src="assets/images/banners/hero.png" alt="Studio Akira Workshop">
+        <!-- Story Section -->
+        <section class="story-section">
+            <div class="container">
+                <div class="story-grid">
+                    <div class="story-content">
+                        <p class="section-label">WHO WE ARE</p>
+                        <h2 class="section-title" style="text-align: left;">The Art of Slow Living</h2>
+                        <p style="margin-bottom: 20px; line-height: 1.8;">
+                            Studio Akira began with a simple belief: that the objects we surround ourselves with
+                            effectively
+                            shape our daily rituals. What started as a small passion project has grown into a dedicated
+                            atelier crafting premium, sustainable candles.
+                        </p>
+                    </div>
+                    <div class="story-image">
+                        <img src="assets/images/banners/hero.png" alt="Studio Akira Workshop">
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Values Section -->
-    <section class="values-section">
-        <div class="container">
-            <div class="text-center">
-                <p class="section-label">OUR PHILOSOPHY</p>
-                <h2 class="section-title">Core Values</h2>
-            </div>
-
-            <div class="values-grid">
-                <div class="value-card">
-                    <div class="value-icon">🌿</div>
-                    <h3>Sustainability First</h3>
-                    <p>We believe in treading lightly. Our materials are ethically sourced, renewable, and
-                        biodegradable.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">✨</div>
-                    <h3>Artisan Craftsmanship</h3>
-                    <p>Every single candle is hand-poured in small batches to ensure meticulous quality and care.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">🤍</div>
-                    <h3>Pure Ingredients</h3>
-                    <p>No paraffins, no phthalates, no hidden toxins. Just pure, natural goodness for your home.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -230,8 +197,17 @@
     <script src="js/firebase-config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/cms.js"></script>
 
     <script>
+        // Initialize CMS
+        cms.init().then(() => {
+            cms.loadContent('about').then(() => {
+                cms.renderSections('cms-content');
+                cms.renderNavigation('.navbar-menu');
+            });
+        });
+
         // Profile dropdown toggle
         function toggleProfileMenu(event) {
             if (event) event.stopPropagation();

@@ -96,6 +96,18 @@
                 });
                 statusDiv.innerHTML += '<p>✓ Themes initialized</p>';
 
+                // Initialize Navigation
+                await db.collection('websiteContent').doc('navigation').set({
+                    links: [
+                        { label: 'Home', url: 'index.html' },
+                        { label: 'Collections', url: '#', action: "requireLogin('collections')" },
+                        { label: 'About', url: 'about.html' },
+                        { label: 'Contact', url: 'contact.html' },
+                        { label: 'Orders', url: '#', action: "requireLogin('orders')" }
+                    ]
+                });
+                statusDiv.innerHTML += '<p>✓ Navigation initialized</p>';
+
                 // Initialize Homepage Content
                 await db.collection('websiteContent').doc('homepage').set({
                     sections: [

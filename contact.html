@@ -306,9 +306,36 @@
             });
         }
 
-        function submitContactForm() {
-            showToast('Message sent successfully! We will get back to you soon.', 'success');
-            document.querySelector('form').reset();
+        async function submitContactForm() {
+            const name = document.querySelector('input[placeholder="Your Name"]').value;
+            const email = document.querySelector('input[placeholder="your@email.com"]').value;
+            const subject = document.querySelector('input[placeholder="How can we help?"]').value;
+            const message = document.querySelector('textarea').value;
+
+            try {
+                const btn = document.querySelector('.contact-form button');
+                btn.disabled = true;
+                btn.textContent = 'Sending...';
+
+                await db.collection('contactMessages').add({
+                    name,
+                    email,
+                    subject,
+                    message,
+                    status: 'unread',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('Message sent successfully! We will get back to you soon.', 'success');
+                document.querySelector('form').reset();
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showToast('Failed to send message. Please try again.', 'error');
+            } finally {
+                const btn = document.querySelector('.contact-form button');
+                btn.disabled = false;
+                btn.textContent = 'Send Message';
+            }
         }
     </script>
 </body>

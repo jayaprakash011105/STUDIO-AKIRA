@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Inquiries - STUDIO AKIRA</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/admin-new.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .message-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 2px solid #edf2f7;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .message-card:hover {
+            border-color: var(--admin-accent);
+            transform: translateY(-3px);
+            box-shadow: var(--admin-card-shadow);
+        }
+
+        .message-card.unread {
+            border-left: 6px solid var(--admin-accent);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .message-meta {
+            font-size: 0.85rem;
+            color: var(--admin-text-muted);
+        }
+
+        .message-body {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--admin-text-main);
+            white-space: pre-wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 1rem;
+            border-top: 1px solid #edf2f7;
+            padding-top: 1rem;
+        }
+
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-unread {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-read {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .status-replied {
+            background: #dcfce7;
+            color: #166534;
+        }
+    </style>
+</head>
+
+<body class="admin-body">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar glass">
+        <div class="admin-logo">studio akira</div>
+
+        <nav class="admin-nav">
+            <div class="nav-group-label">Core Management</div>
+            <a href="dashboard.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🛸</span>
+                <span>Overview</span>
+            </a>
+            <a href="products.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🕯️</span>
+                <span>Catalog</span>
+            </a>
+            <a href="orders.html" class="admin-nav-item">
+                <span class="admin-nav-icon">📦</span>
+                <span>Sales</span>
+            </a>
+            <a href="users.html" class="admin-nav-item">
+                <span class="admin-nav-icon">👥</span>
+                <span>Community</span>
+            </a>
+            <a href="messages.html" class="admin-nav-item active">
+                <span class="admin-nav-icon">✉️</span>
+                <span>Messages</span>
+            </a>
+
+            <div class="nav-group-label" style="margin-top: 2rem;">System & Style</div>
+            <a href="financial.html" class="admin-nav-item">
+                <span class="admin-nav-icon">💰</span>
+                <span>Financials</span>
+            </a>
+            <a href="content.html" class="admin-nav-item">
+                <span class="admin-nav-icon">✨</span>
+                <span>Appearance</span>
+            </a>
+        </nav>
+
+        <div class="admin-nav-footer">
+            <a href="#" class="admin-nav-item" onclick="logout()">
+                <span class="admin-nav-icon">🚪</span>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-welcome">
+                <h1>Customer Inquiries</h1>
+                <p>Manage messages and support requests from your customers.</p>
+            </div>
+            <div class="header-actions">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name or email..."
+                        oninput="renderMessages()">
+                </div>
+            </div>
+        </header>
+
+        <div class="filter-tabs" style="margin-bottom: 2rem;">
+            <button class="filter-tab active" onclick="setFilter('all', this)">All Messages</button>
+            <button class="filter-tab" onclick="setFilter('unread', this)">Unread</button>
+            <button class="filter-tab" onclick="setFilter('read', this)">Read</button>
+            <button class="filter-tab" onclick="setFilter('replied', this)">Replied</button>
+        </div>
+
+        <div id="messagesGrid">
+            <!-- Messages loaded via JS -->
+            <div class="text-center" style="padding: 4rem;">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        let allMessages = [];
+        let currentFilter = 'all';
+        let unsubMessages = null;
+
+        checkRole(['admin']).then(user => {
+            if (user) startMessagesSync();
+        });
+
+        function startMessagesSync() {
+            if (unsubMessages) unsubMessages();
+
+            unsubMessages = db.collection('contactMessages')
+                .onSnapshot(snapshot => {
+                    console.log('Received messages snapshot, size:', snapshot.size);
+                    allMessages = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        allMessages.push({ id: doc.id, ...data });
+                    });
+
+                    // Sort in memory - handle missing createdAt by putting them at the end
+                    allMessages.sort((a, b) => {
+                        const timeA = a.createdAt?.toMillis() || 0;
+                        const timeB = b.createdAt?.toMillis() || 0;
+                        return timeB - timeA;
+                    });
+
+                    renderMessages();
+                }, error => {
+                    console.error('Messages Sync Error:', error);
+                    document.getElementById('messagesGrid').innerHTML = `
+                        <div class="text-center" style="padding: 4rem; color: #ef4444;">
+                            <h3>Sync Error</h3>
+                            <p>${error.message}</p>
+                            <p style="font-size: 0.9rem; margin-top: 1rem;">Please ensure you have permission to view contact messages.</p>
+                        </div>
+                    `;
+                    showToast('Error syncing inquiries', 'error');
+                });
+        }
+
+        function setFilter(filter, el) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const grid = document.getElementById('messagesGrid');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let data = allMessages;
+            if (currentFilter !== 'all') {
+                data = data.filter(m => m.status === currentFilter);
+            }
+            if (searchTerm) {
+                data = data.filter(m =>
+                    (m.name && m.name.toLowerCase().includes(searchTerm)) ||
+                    (m.email && m.email.toLowerCase().includes(searchTerm)) ||
+                    (m.subject && m.subject.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            if (data.length === 0) {
+                grid.innerHTML = `<div class="text-center" style="padding: 4rem; color: var(--admin-text-muted);">No messages found.</div>`;
+                return;
+            }
+
+            grid.innerHTML = data.map(m => `
+                <div class="message-card ${m.status === 'unread' ? 'unread' : ''}">
+                    <div class="message-header">
+                        <div>
+                            <div style="font-weight: 700; font-size: 1.25rem;">${m.subject || 'No Subject'}</div>
+                            <div class="message-meta">${m.name} (${m.email}) • ${formatDate(m.createdAt)}</div>
+                        </div>
+                        <span class="status-pill status-${m.status || 'unread'}">${m.status || 'unread'}</span>
+                    </div>
+                    <div class="message-body">${m.message}</div>
+                    <div class="message-actions">
+                        ${m.status === 'unread' ? `
+                            <button class="btn-premium btn-premium-primary" onclick="updateStatus('${m.id}', 'read')">Mark as Read</button>
+                        ` : ''}
+                        ${m.status !== 'replied' ? `
+                            <button class="btn-premium btn-premium-outline" onclick="markReplied('${m.id}')">Mark as Replied</button>
+                        ` : ''}
+                        <button class="btn-premium btn-premium-outline" style="color: #ef4444; border-color: #fca5a5;" onclick="deleteMessage('${m.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateStatus(id, status) {
+            try {
+                await db.collection('contactMessages').doc(id).update({ status });
+                showToast(`Message marked as ${status}`, 'success');
+            } catch (error) {
+                showToast('Failed to update status', 'error');
+            }
+        }
+
+        async function markReplied(id) {
+            if (!confirm('Mark this message as replied?')) return;
+            await updateStatus(id, 'replied');
+        }
+
+        async function deleteMessage(id) {
+            if (!confirm('Are you sure you want to delete this inquiry?')) return;
+            try {
+                await db.collection('contactMessages').doc(id).delete();
+                showToast('Inquiry deleted', 'success');
+            } catch (error) {
+                showToast('Failed to delete message', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

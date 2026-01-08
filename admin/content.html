@@ -4,11 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Management - STUDIO AKIRA Admin</title>
+    <title>Appearance & Content - STUDIO AKIRA</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
 
     <!-- CSS -->
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/admin-new.css">
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -16,78 +22,81 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <style>
-        .theme-selector {
-            background: white;
-            padding: 20px;
-            border-radius: var(--radius-lg);
-            margin-bottom: 30px;
-            box-shadow: var(--shadow-sm);
-        }
-
         .theme-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
         .theme-card {
-            padding: 20px;
-            border: 2px solid var(--color-light-gray);
-            border-radius: var(--radius-md);
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 2px solid #edf2f7;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
         .theme-card:hover {
-            border-color: var(--color-sage);
-            transform: translateY(-2px);
+            transform: translateY(-5px);
+            border-color: var(--admin-accent);
+            box-shadow: var(--admin-card-shadow);
         }
 
         .theme-card.active {
-            border-color: var(--color-sage-dark);
-            background: var(--color-sage-light);
+            border-color: var(--admin-accent);
+            background: #fdfdfd;
         }
 
-        .theme-preview {
+        .theme-card.active::before {
+            content: 'Active';
+            position: absolute;
+            top: 15px;
+            right: -25px;
+            background: var(--admin-accent);
+            color: white;
+            padding: 5px 30px;
+            transform: rotate(45deg);
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .color-preview {
             display: flex;
-            gap: 5px;
-            justify-content: center;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 1rem;
         }
 
-        .theme-color {
-            width: 30px;
-            height: 30px;
+        .color-dot {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
+            border: 2px solid #eee;
         }
 
-        .section-manager {
+        .section-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .section-card {
             background: white;
-            padding: 25px;
-            border-radius: var(--radius-lg);
-            margin-bottom: 20px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .section-item {
+            padding: 1.25rem 2rem;
+            border-radius: 16px;
+            border: 1px solid #edf2f7;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px;
-            border: 1px solid var(--color-light-gray);
-            border-radius: var(--radius-md);
-            margin-bottom: 10px;
+            transition: all 0.2s ease;
         }
 
-        .section-item.inactive {
-            opacity: 0.5;
-        }
-
-        .section-actions {
-            display: flex;
-            gap: 10px;
+        .section-card:hover {
+            border-color: var(--admin-accent);
+            background: #fcfcfc;
         }
 
         .modal {
@@ -95,477 +104,638 @@
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 10000;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
         }
 
-        .modal.active {
+        .modal.show {
             display: flex;
         }
 
-        .modal-content {
+        .modal-dialog {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
+            padding: 32px;
+            border-radius: 24px;
             max-width: 600px;
             width: 90%;
-            max-height: 80vh;
+            max-height: 90vh;
             overflow-y: auto;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
 
-        .form-group label {
+        .form-label {
             display: block;
-            margin-bottom: 8px;
             font-weight: 600;
-            color: var(--color-sage-darker);
+            margin-bottom: 8px;
+            color: var(--admin-text-main);
+            font-size: 0.9rem;
         }
 
-        .form-group input,
-        .form-group textarea {
+        .form-input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e5e5;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border: 2px solid #edf2f7;
+            border-radius: 12px;
             font-family: inherit;
         }
 
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
+        .image-preview-container {
+            margin-top: 10px;
+            position: relative;
+            width: 100%;
+            height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ddd;
+        }
+
+        .image-preview-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-preview-container:hover .upload-overlay {
+            display: flex;
+        }
+
+        .progress-bar {
+            width: 80%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--admin-accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .field-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 
-<body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-logo">studio akira</div>
-        <ul class="sidebar-menu">
-            <li class="sidebar-item"><a href="dashboard.html" class="sidebar-link">📊 Dashboard</a></li>
-            <li class="sidebar-item"><a href="products.html" class="sidebar-link">🕯️ Products</a></li>
-            <li class="sidebar-item"><a href="orders.html" class="sidebar-link">📦 Orders</a></li>
-            <li class="sidebar-item"><a href="users.html" class="sidebar-link">👥 Users</a></li>
-            <li class="sidebar-item"><a href="approvals.html" class="sidebar-link">✅ Approvals</a></li>
-            <li class="sidebar-item"><a href="financial.html" class="sidebar-link">💰 Financial</a></li>
-            <li class="sidebar-item"><a href="content.html" class="sidebar-link active">📝 Content</a></li>
-            <li class="sidebar-item"><a href="#" class="sidebar-link" onclick="logout()">🚪 Logout</a></li>
-        </ul>
+<body class="admin-body">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar glass">
+        <div class="admin-logo">studio akira</div>
+
+        <nav class="admin-nav">
+            <div class="nav-group-label">Core Management</div>
+            <a href="dashboard.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🛸</span>
+                <span>Overview</span>
+            </a>
+            <a href="products.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🕯️</span>
+                <span>Catalog</span>
+            </a>
+            <a href="orders.html" class="admin-nav-item">
+                <span class="admin-nav-icon">📦</span>
+                <span>Sales</span>
+            </a>
+            <a href="users.html" class="admin-nav-item">
+                <span class="admin-nav-icon">👥</span>
+                <span>Community</span>
+            </a>
+            <a href="messages.html" class="admin-nav-item">
+                <span class="admin-nav-icon">✉️</span>
+                <span>Messages</span>
+            </a>
+
+            <div class="nav-group-label" style="margin-top: 2rem;">System & Style</div>
+            <a href="financial.html" class="admin-nav-item">
+                <span class="admin-nav-icon">💰</span>
+                <span>Financials</span>
+            </a>
+            <a href="content.html" class="admin-nav-item active">
+                <span class="admin-nav-icon">✨</span>
+                <span>Appearance</span>
+            </a>
+        </nav>
+
+        <div class="admin-nav-footer">
+            <a href="#" class="admin-nav-item" onclick="logout()">
+                <span class="admin-nav-icon">🚪</span>
+                <span>Logout</span>
+            </a>
+        </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="content-header">
-            <h1>Content Management System</h1>
-            <p style="color: var(--color-text-light);">Manage website content, themes, and sections</p>
+    <!-- Main Content Area -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-welcome">
+                <h1>Appearance & Style</h1>
+                <p>Curate the visual experience of your luxury brand.</p>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">Manage Area:</label>
+                <select id="pageSelector" class="form-input" style="width: 200px; padding: 8px 12px;"
+                    onchange="switchPage(this.value)">
+                    <option value="homepage">Homepage</option>
+                    <option value="about">About Us</option>
+                    <option value="navigation">Global Navigation</option>
+                </select>
+                <button class="btn-premium btn-premium-outline" onclick="window.open('../index.html', '_blank')">
+                    <span>👁️</span> Preview Site
+                </button>
+            </div>
+        </header>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-family: 'Playfair Display', serif;">Aesthetic Themes</h2>
+        </div>
+        <div class="theme-grid" id="themeGrid">
+            <!-- Themes loaded via JS -->
         </div>
 
-        <!-- Theme Selector -->
-        <div class="theme-selector">
-            <h2 style="margin-bottom: 15px;">🎨 Active Theme</h2>
-            <p style="color: var(--color-text-light); margin-bottom: 15px;">Switch between themes for different
-                occasions and festivals</p>
-            <div class="theme-grid" id="themeGrid">
-                <!-- Themes will be loaded here -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-family: 'Playfair Display', serif;">Homepage Sections</h2>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-premium btn-premium-outline" style="padding: 8px 15px;" onclick="addSection()">➕ Add
+                    Section</button>
+                <button class="btn-premium btn-premium-outline" style="padding: 8px 15px;" onclick="loadSections()">🔄
+                    Sync Layout</button>
             </div>
         </div>
-
-        <!-- Section Manager -->
-        <div class="section-manager">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>📋 Homepage Sections</h2>
-                <button class="btn btn-primary" onclick="refreshSections()">🔄 Refresh</button>
-            </div>
-            <div id="sectionsContainer">
-                <!-- Sections will be loaded here -->
-            </div>
+        <div class="section-list" id="sectionsContainer">
+            <!-- Sections loaded via JS -->
         </div>
 
-        <!-- Quick Actions -->
-        <div class="section-manager">
-            <h2 style="margin-bottom: 15px;">⚡ Quick Actions</h2>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <a href="cms-init.html" class="btn btn-secondary">🔧 Initialize CMS Database</a>
-                <button class="btn btn-outline-primary" onclick="exportContent()">📥 Export Content</button>
-                <button class="btn btn-outline-primary" onclick="window.open('../index.html', '_blank')">👁️ Preview
-                    Site</button>
+        <div class="admin-card"
+            style="margin-top: 3rem; background: #fafafa; border: 2px dashed #eee; text-align: center; padding: 3rem;">
+            <h3 style="margin-bottom: 1rem;">Advanced Content Tools</h3>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <a href="cms-init.html" class="btn-premium btn-premium-outline">Initialize CMS</a>
+                <button class="btn-premium btn-premium-outline" onclick="exportContent()">Export Configuration</button>
             </div>
         </div>
     </main>
 
-    <!-- Edit Section Modal -->
+    <!-- Edit Modal -->
     <div class="modal" id="editModal">
-        <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 id="modalTitle">Edit Section</h2>
-                <button onclick="closeEditModal()"
-                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
-            </div>
-            <div id="modalForm">
-                <!-- Form will be generated dynamically -->
-            </div>
+        <div class="modal-dialog">
+            <h2 id="modalTitle" style="margin-top: 0; font-family: 'Playfair Display', serif;">Edit Section</h2>
+            <div id="modalForm"></div>
         </div>
-    </div>
-
-    <!-- Loading Spinner -->
-    <div id="loading-spinner">
-        <div class="spinner"></div>
     </div>
 
     <!-- Scripts -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/utils.js"></script>
     <script src="../js/cms.js"></script>
-
     <script>
         let currentSections = [];
         let currentThemes = {};
         let currentSettings = {};
         let editingSection = null;
+        let unsubThemes = null;
+        let unsubSections = null;
+        let currentPage = 'homepage';
+
+        function switchPage(pageId) {
+            currentPage = pageId;
+            loadSections();
+        }
 
         checkRole(['admin']).then(user => {
-            if (user) {
-                loadThemes();
-                loadSections();
-            }
+            if (user) startContentSync();
         });
 
-        async function loadThemes() {
-            try {
-                const settingsDoc = await db.collection('websiteContent').doc('settings').get();
-                currentSettings = settingsDoc.exists ? settingsDoc.data() : { activeThemeId: 'standard' };
+        function startContentSync() {
+            if (unsubThemes) unsubThemes();
+            if (unsubSections) unsubSections();
 
-                const themesDoc = await db.collection('websiteContent').doc('themes').get();
-                if (themesDoc.exists) {
-                    currentThemes = themesDoc.data();
-                    renderThemes();
+            // Sync Themes and Settings
+            unsubThemes = db.collection('websiteContent').onSnapshot(snapshot => {
+                snapshot.forEach(doc => {
+                    if (doc.id === 'settings') {
+                        currentSettings = doc.data();
+                    } else if (doc.id === 'themes') {
+                        currentThemes = doc.data();
+                    }
+                });
+                renderThemes();
+            }, e => showToast('Theme sync failed', 'error'));
+
+            // Sync Homepage Sections
+            // unsubSections = db.collection('websiteContent').doc('homepage').onSnapshot(doc => {
+            //     if (doc.exists) {
+            //         currentSections = doc.data().sections || [];
+            //         renderSections();
+            //     }
+            // }, e => console.error('Section sync failed', e));
+            loadSections(); // Call loadSections initially
+        }
+
+        async function loadSections() {
+            try {
+                showLoading(true);
+                if (currentPage === 'navigation') {
+                    const nav = await cms.loadNavigation();
+                    currentSections = [{
+                        id: 'navigation',
+                        type: 'navigation',
+                        order: 1,
+                        active: true,
+                        data: { links: cms.navigation }
+                    }];
                 } else {
-                    document.getElementById('themeGrid').innerHTML = '<p style="color: var(--color-text-light);">No themes found. Please run CMS initialization.</p>';
+                    const sectionsData = await cms.loadContent(currentPage);
+                    currentSections = sectionsData.sections || [];
                 }
-            } catch (error) {
-                console.error('Error loading themes:', error);
-                showToast('Error loading themes', 'error');
+                renderSections();
+                showLoading(false);
+            } catch (e) {
+                console.error(e);
+                showToast('Failed to load sections', 'error');
             }
         }
 
         function renderThemes() {
             const grid = document.getElementById('themeGrid');
-            grid.innerHTML = '';
-
-            Object.keys(currentThemes).forEach(themeId => {
-                const theme = currentThemes[themeId];
-                const isActive = currentSettings.activeThemeId === themeId;
-
-                const card = document.createElement('div');
-                card.className = `theme-card ${isActive ? 'active' : ''}`;
-                card.onclick = () => switchTheme(themeId);
-
+            grid.innerHTML = Object.keys(currentThemes).map(id => {
+                const theme = currentThemes[id];
+                const active = currentSettings.activeThemeId === id;
                 const colors = theme.colors || {};
-                const colorKeys = Object.keys(colors).slice(0, 3);
-
-                card.innerHTML = `
-                    <div class="theme-preview">
-                        ${colorKeys.map(key => `<div class="theme-color" style="background: ${colors[key]}"></div>`).join('')}
+                return `
+                    <div class="theme-card ${active ? 'active' : ''}" onclick="switchTheme('${id}')">
+                        <div class="color-preview">
+                            <div class="color-dot" style="background: ${colors.sage || '#6b8a6b'}"></div>
+                            <div class="color-dot" style="background: ${colors.sageLight || '#f4f7f4'}"></div>
+                            <div class="color-dot" style="background: ${colors.text || '#2d3731'}"></div>
+                        </div>
+                        <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 5px;">${theme.name || id}</div>
+                        <div style="font-size: 0.85rem; color: var(--admin-text-muted);">${theme.description || 'A unique visual aesthetic.'}</div>
                     </div>
-                    <div style="font-weight: 600; margin-bottom: 5px;">${theme.name || themeId}</div>
-                    ${isActive ? '<div style="color: var(--color-sage-dark); font-size: 0.85rem;">✓ Active</div>' : ''}
                 `;
-
-                grid.appendChild(card);
-            });
+            }).join('');
         }
 
-        async function switchTheme(themeId) {
+        async function switchTheme(id) {
             try {
                 showLoading(true);
                 await db.collection('websiteContent').doc('settings').set({
-                    activeThemeId: themeId,
+                    activeThemeId: id,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
-
-                currentSettings.activeThemeId = themeId;
-                renderThemes();
-                showToast(`Theme switched to ${currentThemes[themeId].name}`, 'success');
-            } catch (error) {
-                console.error('Error switching theme:', error);
-                showToast('Error switching theme', 'error');
-            } finally {
-                showLoading(false);
-            }
+                // No need to manually update state/UI - real-time listener will handle it
+                showToast(`Modern style updated: ${id}`, 'success');
+            } catch (e) { showToast('Switch failed', 'error'); } finally { showLoading(false); }
         }
 
-        async function loadSections() {
-            try {
-                const contentDoc = await db.collection('websiteContent').doc('homepage').get();
-                if (contentDoc.exists) {
-                    const data = contentDoc.data();
-                    currentSections = data.sections || [];
-                    renderSections();
-                } else {
-                    document.getElementById('sectionsContainer').innerHTML = '<p style="color: var(--color-text-light);">No sections found. Please run CMS initialization.</p>';
-                }
-            } catch (error) {
-                console.error('Error loading sections:', error);
-                showToast('Error loading sections', 'error');
-            }
-        }
 
         function renderSections() {
             const container = document.getElementById('sectionsContainer');
-            container.innerHTML = '';
-
             const sorted = [...currentSections].sort((a, b) => (a.order || 0) - (b.order || 0));
+            container.innerHTML = sorted.map(s => {
+                const image = s.data?.image || s.data?.collections?.[0]?.image || s.data?.featuredImage;
+                const thumbnail = image ? `<img src="${cms.fixPath(image)}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;">` :
+                    `<div style="width: 50px; height: 50px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">${getSectionIcon(s.type)}</div>`;
 
-            sorted.forEach(section => {
-                const item = document.createElement('div');
-                item.className = `section-item ${section.active === false ? 'inactive' : ''}`;
-
-                item.innerHTML = `
-                    <div>
-                        <div style="font-weight: 600; margin-bottom: 5px;">${getSectionIcon(section.type)} ${getSectionName(section.type)}</div>
-                        <div style="font-size: 0.85rem; color: var(--color-text-light);">Order: ${section.order} • ${section.active !== false ? 'Active' : 'Inactive'}</div>
-                    </div>
-                    <div class="section-actions">
-                        <button class="btn btn-sm btn-primary" onclick="editSection('${section.id}')">Edit</button>
-                        <button class="btn btn-sm ${section.active !== false ? 'btn-secondary' : 'btn-success'}" onclick="toggleSection('${section.id}')">
-                            ${section.active !== false ? 'Hide' : 'Show'}
-                        </button>
+                return `
+                    <div class="section-card ${s.active === false ? 'inactive' : ''}">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            ${thumbnail}
+                            <div>
+                                <div style="font-weight: 700;">${getSectionName(s.type)}</div>
+                                <div style="font-size: 0.8rem; color: var(--admin-text-muted);">Priority: ${s.order} • ${s.active !== false ? 'Active' : 'Hidden'}</div>
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-premium btn-premium-primary" style="padding: 8px 15px;" onclick="editSection('${s.id}')">Configure</button>
+                            <button class="btn-premium btn-premium-outline" style="padding: 8px 15px;" onclick="toggleSection('${s.id}')">${s.active !== false ? 'Hide' : 'Show'}</button>
+                        </div>
                     </div>
                 `;
-
-                container.appendChild(item);
-            });
+            }).join('');
         }
 
         function getSectionIcon(type) {
-            const icons = {
-                hero: '🏠',
-                collections: '📦',
-                bestSellers: '⭐',
-                whyUs: '✨',
-                gifting: '🎁',
-                reviews: '💬',
-                newsletter: '✉️'
-            };
-            return icons[type] || '📄';
+            return { hero: '🏠', collections: '📦', bestSellers: '⭐', whyUs: '✨', gifting: '🎁', reviews: '💬', newsletter: '✉️', navigation: '🧭' }[type] || '📄';
         }
 
         function getSectionName(type) {
-            const names = {
-                hero: 'Hero Section',
-                collections: 'Collections',
-                bestSellers: 'Best Sellers',
-                whyUs: 'Why Choose Us',
-                gifting: 'Gifting',
-                reviews: 'Customer Reviews',
-                newsletter: 'Newsletter'
-            };
-            return names[type] || type;
+            return { hero: 'Hero Masterpiece', collections: 'Discovery Grid', bestSellers: 'Signature Selection', whyUs: 'Brand Philosophy', gifting: 'Ritual Kits', reviews: 'Customer Stories', newsletter: 'Insider List', navigation: 'Global Navigation' }[type] || type;
         }
 
-        async function toggleSection(sectionId) {
-            try {
-                const section = currentSections.find(s => s.id === sectionId);
-                if (!section) return;
-
-                section.active = section.active === false ? true : false;
-
-                await db.collection('websiteContent').doc('homepage').update({
-                    sections: currentSections,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                renderSections();
-                showToast(`Section ${section.active ? 'shown' : 'hidden'}`, 'success');
-            } catch (error) {
-                console.error('Error toggling section:', error);
-                showToast('Error updating section', 'error');
-            }
+        async function toggleSection(id) {
+            const s = currentSections.find(sec => sec.id === id);
+            if (!s) return;
+            s.active = s.active === false;
+            await db.collection('websiteContent').doc('homepage').update({ sections: currentSections });
+            // Real-time listener handles UI refresh
         }
 
-        function editSection(sectionId) {
-            editingSection = currentSections.find(s => s.id === sectionId);
+        function editSection(id) {
+            editingSection = currentSections.find(s => s.id === id);
             if (!editingSection) return;
-
-            document.getElementById('modalTitle').textContent = `Edit ${getSectionName(editingSection.type)}`;
+            document.getElementById('modalTitle').textContent = `Tailor ${getSectionName(editingSection.type)}`;
             generateEditForm(editingSection);
-            document.getElementById('editModal').classList.add('active');
+            document.getElementById('editModal').classList.add('show');
         }
 
-        function generateEditForm(section) {
+        function generateEditForm(s) {
             const form = document.getElementById('modalForm');
-            let html = '<form onsubmit="saveSection(event)">';
+            const data = s.data || {};
+            let html = `<form onsubmit="saveSection(event)">
+                <div class="form-group"><label class="form-label">Display Order</label><input type="number" class="form-input" id="edit-order" value="${s.order || 1}"></div>`;
 
-            // Basic fields
-            html += `
-                <div class="form-group">
-                    <label>Section Order</label>
-                    <input type="number" id="edit-order" value="${section.order || 1}" min="1">
-                </div>
-            `;
+            // Helper to generate input based on field name and value
+            const generateInput = (key, value, label) => {
+                if (key.toLowerCase().includes('image')) {
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">${label}</label>
+                            <div class="image-preview-container" id="preview-${key}">
+                                <img src="${value ? cms.fixPath(value) : '../assets/images/placeholder.png'}" id="img-${key}">
+                                <div class="upload-overlay" onclick="document.getElementById('file-${key}').click()">
+                                    <span>Change Image</span>
+                                    <div class="progress-bar"><div class="progress-fill" id="progress-${key}"></div></div>
+                                </div>
+                            </div>
+                            <input type="file" id="file-${key}" style="display:none;" onchange="uploadImage('${key}', this.files[0])">
+                            <input type="hidden" id="edit-${key}" value="${value || ''}">
+                        </div>
+                    `;
+                } else if (key === 'description' || key === 'text') {
+                    return `<div class="form-group"><label class="form-label">${label}</label><textarea class="form-input" id="edit-${key}" rows="3">${value || ''}</textarea></div>`;
+                } else {
+                    return `<div class="form-group"><label class="form-label">${label}</label><input type="text" class="form-input" id="edit-${key}" value="${value || ''}"></div>`;
+                }
+            };
 
-            // Type-specific fields
-            const data = section.data || {};
+            // Common fields for simple sections
+            const commonFields = {
+                hero: ['title', 'tagline', 'description', 'image', 'buttonText', 'buttonLink'],
+                collections: ['label', 'title', 'description', 'buttonText', 'buttonLink'],
+                bestSellers: ['label', 'title', 'description', 'image', 'buttonText', 'buttonLink'],
+                whyUs: ['label', 'title', 'description'],
+                gifting: ['label', 'title', 'description', 'image', 'buttonText', 'buttonLink'],
+                reviews: ['label', 'title', 'rating', 'reviewCount', 'buttonText', 'buttonLink'],
+                newsletter: ['title', 'description', 'placeholder', 'buttonText']
+            };
 
-            if (section.type === 'hero') {
-                html += `
-                    <div class="form-group">
-                        <label>Title</label>
-                        <input type="text" id="edit-title" value="${data.title || ''}" placeholder="studio akira">
-                    </div>
-                    <div class="form-group">
-                        <label>Tagline</label>
-                        <input type="text" id="edit-tagline" value="${data.tagline || ''}" placeholder="Where light becomes ritual.">
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="edit-description">${data.description || ''}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Button Text</label>
-                        <input type="text" id="edit-buttonText" value="${data.buttonText || ''}" placeholder="Explore Collections">
-                    </div>
-                    <div class="form-group">
-                        <label>Image Path</label>
-                        <input type="text" id="edit-image" value="${data.image || ''}" placeholder="assets/images/...">
-                    </div>
-                `;
-            } else if (section.type === 'collections' || section.type === 'bestSellers' || section.type === 'gifting') {
-                html += `
-                    <div class="form-group">
-                        <label>Label</label>
-                        <input type="text" id="edit-label" value="${data.label || ''}">
-                    </div>
-                    <div class="form-group">
-                        <label>Title</label>
-                        <input type="text" id="edit-title" value="${data.title || ''}">
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="edit-description">${data.description || ''}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Button Text</label>
-                        <input type="text" id="edit-buttonText" value="${data.buttonText || ''}">
-                    </div>
-                `;
-            } else if (section.type === 'newsletter') {
-                html += `
-                    <div class="form-group">
-                        <label>Title</label>
-                        <input type="text" id="edit-title" value="${data.title || ''}">
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="edit-description">${data.description || ''}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Button Text</label>
-                        <input type="text" id="edit-buttonText" value="${data.buttonText || ''}">
-                    </div>
-                `;
-            }
+            const fields = commonFields[s.type] || Object.keys(data);
+            fields.forEach(f => {
+                const label = f.charAt(0).toUpperCase() + f.slice(1).replace(/([A-Z])/g, ' $1');
+                if (Array.isArray(data[f]) || f === 'collections' || f === 'reviews' || f === 'stats' || f === 'features' || f === 'badges') {
+                    // Array field handling
+                    html += `<div class="form-group"><label class="form-label">${label}</label><div id="array-container-${f}">`;
+                    const items = data[f] || [];
+                    items.forEach((item, idx) => {
+                        html += `<div class="admin-card" style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #eee;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <strong>Item #${idx + 1}</strong>
+                                <button type="button" class="btn-premium btn-premium-outline" style="padding: 4px 8px; font-size: 0.7rem;" onclick="removeArrayItem('${f}', ${idx})">Remove</button>
+                            </div>`;
 
-            html += `
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
-            `;
+                        Object.keys(item).forEach(innerKey => {
+                            const innerValue = item[innerKey];
+                            const innerLabel = innerKey.charAt(0).toUpperCase() + innerKey.slice(1);
 
+                            if (innerKey.toLowerCase().includes('image')) {
+                                html += `
+                                    <div class="form-group">
+                                        <label class="form-label">${innerLabel}</label>
+                                        <div class="image-preview-container" id="preview-${f}-${idx}-${innerKey}" style="height: 120px;">
+                                            <img src="${innerValue ? cms.fixPath(innerValue) : '../assets/images/placeholder.png'}" id="img-${f}-${idx}-${innerKey}">
+                                            <div class="upload-overlay" onclick="document.getElementById('file-${f}-${idx}-${innerKey}').click()">
+                                                <span>Change</span>
+                                                <div class="progress-bar"><div class="progress-fill" id="progress-${f}-${idx}-${innerKey}"></div></div>
+                                            </div>
+                                        </div>
+                                        <input type="file" id="file-${f}-${idx}-${innerKey}" style="display:none;" onchange="uploadImageArray('${f}', ${idx}, '${innerKey}', this.files[0])">
+                                        <input type="hidden" class="array-input" data-array="${f}" data-idx="${idx}" data-key="${innerKey}" id="edit-${f}-${idx}-${innerKey}" value="${innerValue || ''}">
+                                    </div>
+                                `;
+                            } else {
+                                html += `<div class="form-group"><label class="form-label">${innerLabel}</label>
+                                    <input type="text" class="form-input array-input" data-array="${f}" data-idx="${idx}" data-key="${innerKey}" value="${innerValue || ''}"></div>`;
+                            }
+                        });
+                        html += `</div>`;
+                    });
+                    html += `</div><button type="button" class="btn-premium btn-premium-outline" style="width: 100%; margin-top: 0.5rem;" onclick="addArrayItem('${f}')">Add Item</button></div>`;
+                } else {
+                    html += generateInput(f, data[f] || '', label);
+                }
+            });
+
+            html += `<div style="display: flex; gap: 12px; margin-top: 2rem;">
+                <button type="submit" class="btn-premium btn-premium-primary" style="flex: 2;">Save Masterpiece</button>
+                <button type="button" class="btn-premium btn-premium-outline" style="flex: 1; border-color: #ff7675; color: #ff7675;" onclick="removeSection('${s.id}')">Delete</button>
+                <button type="button" class="btn-premium btn-premium-outline" style="flex: 1;" onclick="closeModal()">Back</button>
+            </div></form>`;
             form.innerHTML = html;
         }
 
-        async function saveSection(event) {
-            event.preventDefault();
+        async function uploadImageArray(arrayKey, idx, fieldKey, file) {
+            if (!file) return;
+            const progressFill = document.getElementById(`progress-${arrayKey}-${idx}-${fieldKey}`);
+            const previewImg = document.getElementById(`img-${arrayKey}-${idx}-${fieldKey}`);
+            const hiddenInput = document.getElementById(`edit-${arrayKey}-${idx}-${fieldKey}`);
 
             try {
-                showLoading(true);
+                const storageRef = storage.ref(`cms/${Date.now()}_${file.name}`);
+                const uploadTask = storageRef.put(file);
 
-                // Update order
-                editingSection.order = parseInt(document.getElementById('edit-order').value);
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressFill.style.width = progress + '%';
+                    },
+                    (error) => {
+                        console.error("Upload failed", error);
+                        showToast("Upload failed", "error");
+                    },
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        hiddenInput.value = downloadURL;
+                        previewImg.src = downloadURL;
+                        showToast("Image uploaded!", "success");
+                    }
+                );
+            } catch (e) {
+                console.error(e);
+                showToast("Upload failed", "error");
+            }
+        }
 
-                // Update data based on type
-                const data = editingSection.data || {};
+        function addArrayItem(arrayKey) {
+            const data = editingSection.data || {};
+            if (!data[arrayKey]) data[arrayKey] = [];
 
-                if (document.getElementById('edit-title')) {
-                    data.title = document.getElementById('edit-title').value;
-                }
-                if (document.getElementById('edit-tagline')) {
-                    data.tagline = document.getElementById('edit-tagline').value;
-                }
-                if (document.getElementById('edit-description')) {
-                    data.description = document.getElementById('edit-description').value;
-                }
-                if (document.getElementById('edit-buttonText')) {
-                    data.buttonText = document.getElementById('edit-buttonText').value;
-                }
-                if (document.getElementById('edit-label')) {
-                    data.label = document.getElementById('edit-label').value;
-                }
-                if (document.getElementById('edit-image')) {
-                    data.image = document.getElementById('edit-image').value;
-                }
+            // Define schemas for new items
+            const schemas = {
+                collections: { title: 'New Collection', description: '', image: '', link: 'customer/products.html', price: 'From ₹0' },
+                reviews: { initial: 'U', name: 'User', location: 'City', avatarColor: '#6B8A6B', stars: '★★★★★', title: 'Great!', text: 'Your review here', product: 'Product Name', date: 'Just now' },
+                stats: { value: '0', label: 'Stat Label' },
+                features: { icon: '✨', title: 'Feature Title', description: 'Feature description' },
+                badges: { icon: '✨', text: 'Badge Text' }
+            };
 
+            data[arrayKey].push(schemas[arrayKey] || { title: 'New Item' });
+            editingSection.data = data;
+            generateEditForm(editingSection);
+        }
+
+        function removeArrayItem(arrayKey, idx) {
+            const data = editingSection.data || {};
+            if (data[arrayKey]) {
+                data[arrayKey].splice(idx, 1);
                 editingSection.data = data;
+                generateEditForm(editingSection);
+            }
+        }
 
-                // Save to Firestore
-                await db.collection('websiteContent').doc('homepage').update({
-                    sections: currentSections,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+        async function uploadImage(key, file) {
+            if (!file) return;
+            const progressFill = document.getElementById(`progress-${key}`);
+            const previewImg = document.getElementById(`img-${key}`);
+            const hiddenInput = document.getElementById(`edit-${key}`);
 
-                closeEditModal();
-                renderSections();
-                showToast('Section updated successfully', 'success');
-            } catch (error) {
-                console.error('Error saving section:', error);
-                showToast('Error saving section', 'error');
+            try {
+                const storageRef = storage.ref(`cms/${Date.now()}_${file.name}`);
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressFill.style.width = progress + '%';
+                    },
+                    (error) => {
+                        console.error("Upload failed", error);
+                        showToast("Upload failed", "error");
+                    },
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        hiddenInput.value = downloadURL;
+                        previewImg.src = downloadURL;
+                        showToast("Image uploaded!", "success");
+                    }
+                );
+            } catch (e) {
+                console.error(e);
+                showToast("Upload failed", "error");
+            }
+        }
+
+        async function saveSection(e) {
+            e.preventDefault();
+            editingSection.order = parseInt(document.getElementById('edit-order').value);
+            const data = editingSection.data || {};
+
+            // Handle regular inputs
+            const inputs = e.target.querySelectorAll('input:not(.array-input), textarea:not(.array-input)');
+            inputs.forEach(input => {
+                const id = input.id || '';
+                if (id.startsWith('edit-') && !id.includes('-idx-')) {
+                    const key = id.replace('edit-', '');
+                    if (key !== 'order') {
+                        data[key] = input.value;
+                    }
+                }
+            });
+
+            // Handle array inputs
+            const arrayInputs = e.target.querySelectorAll('.array-input');
+            arrayInputs.forEach(input => {
+                const arrayKey = input.dataset.array;
+                const idx = parseInt(input.dataset.idx);
+                const key = input.dataset.key;
+
+                if (!data[arrayKey]) data[arrayKey] = [];
+                if (!data[arrayKey][idx]) data[arrayKey][idx] = {};
+                data[arrayKey][idx][key] = input.value;
+            });
+
+            editingSection.data = data;
+            try {
+                showLoading(true);
+                if (currentPage === 'navigation') {
+                    await db.collection('websiteContent').doc('navigation').set({ links: data.links });
+                } else {
+                    await db.collection('websiteContent').doc(currentPage).update({ sections: currentSections });
+                }
+                closeModal();
+                showToast('Changes etched in stone.', 'success');
+            } catch (e) {
+                showToast('Save failed', 'error');
             } finally {
                 showLoading(false);
             }
         }
 
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('active');
-            editingSection = null;
-        }
+        async function addSection() {
+            const type = prompt("Enter section type (hero, collections, bestSellers, whyUs, gifting, reviews, newsletter):");
+            if (!type) return;
 
-        function refreshSections() {
-            loadSections();
-            showToast('Sections refreshed', 'success');
-        }
-
-        function exportContent() {
-            const content = {
-                settings: currentSettings,
-                themes: currentThemes,
-                sections: currentSections
+            const newSection = {
+                id: type + '_' + Date.now(),
+                type: type,
+                order: currentSections.length + 1,
+                active: true,
+                data: {}
             };
 
-            const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'studio-akira-content-export.json';
-            a.click();
-            URL.revokeObjectURL(url);
-
-            showToast('Content exported successfully', 'success');
+            currentSections.push(newSection);
+            await db.collection('websiteContent').doc(currentPage).set({ sections: currentSections }, { merge: true });
+            showToast("New section added", "success");
         }
 
-        // Close modal on outside click
-        document.getElementById('editModal').addEventListener('click', function (e) {
-            if (e.target === this) closeEditModal();
-        });
+        async function removeSection(id) {
+            if (!confirm("Are you sure you want to remove this section? This cannot be undone.")) return;
+            currentSections = currentSections.filter(s => s.id !== id);
+            await db.collection('websiteContent').doc(currentPage).update({ sections: currentSections });
+            closeModal();
+            showToast("Section removed", "success");
+        }
+
+        function closeModal() { document.getElementById('editModal').classList.remove('show'); }
+
+        function exportContent() {
+            const blob = new Blob([JSON.stringify({ settings: currentSettings, themes: currentThemes, sections: currentSections }, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'akira-content.json'; a.click();
+        }
     </script>
 </body>
 

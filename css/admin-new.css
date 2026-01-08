@@ -1,0 +1,316 @@
+/* STUDIO AKIRA - Premium Admin Styles */
+
+:root {
+    --admin-sidebar-width: 280px;
+    --admin-glass-bg: rgba(255, 255, 255, 0.7);
+    --admin-glass-border: rgba(255, 255, 255, 0.3);
+    --admin-accent: #6b8a6b;
+    --admin-accent-dark: #4a5d4a;
+    --admin-accent-light: #a8b5a0;
+    --admin-text-main: #2d3436;
+    --admin-text-muted: #636e72;
+    --admin-bg: #f8f9fa;
+    --admin-card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+body.admin-body {
+    background-color: var(--admin-bg);
+    color: var(--admin-text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Glassmorphism Effect */
+.glass {
+    background: var(--admin-glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--admin-glass-border);
+    box-shadow: var(--admin-card-shadow);
+}
+
+/* Navigation Sidebar */
+.admin-sidebar {
+    width: var(--admin-sidebar-width);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: white;
+    padding: 2rem 1.5rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #eef2f3;
+    overflow-y: auto;
+}
+
+.admin-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--admin-accent-dark);
+    margin-bottom: 3rem;
+    padding-left: 1rem;
+    letter-spacing: -0.5px;
+}
+
+.admin-nav {
+    flex-grow: 1;
+}
+
+.nav-group-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--admin-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 1rem;
+    padding-left: 1rem;
+}
+
+.admin-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.2rem;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    color: var(--admin-text-main);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    gap: 12px;
+}
+
+.admin-nav-item:hover {
+    background: var(--admin-bg);
+    color: var(--admin-accent);
+    transform: translateX(4px);
+}
+
+.admin-nav-item.active {
+    background: var(--admin-accent);
+    color: white;
+    box-shadow: 0 4px 15px rgba(107, 138, 107, 0.3);
+}
+
+.admin-nav-icon {
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+}
+
+/* Header Area */
+.admin-main {
+    margin-left: var(--admin-sidebar-width);
+    flex-grow: 1;
+    padding: 2.5rem;
+    max-width: calc(100vw - var(--admin-sidebar-width));
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.header-welcome h1 {
+    font-size: 1.75rem;
+    margin: 0;
+    font-weight: 700;
+    color: var(--admin-text-main);
+}
+
+.header-welcome p {
+    color: var(--admin-text-muted);
+    margin: 5px 0 0;
+}
+
+/* Grid Layouts */
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* Modern Cards */
+.admin-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: var(--admin-card-shadow);
+    transition: transform 0.3s ease;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.stat-icon {
+    padding: 12px;
+    background: var(--admin-bg);
+    border-radius: 12px;
+    font-size: 1.5rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 10px 0;
+}
+
+.stat-label {
+    color: var(--admin-text-muted);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Action Queue */
+.queue-section {
+    background: white;
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: var(--admin-card-shadow);
+}
+
+.queue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    padding: 1.2rem;
+    border-bottom: 1px solid #f1f3f5;
+    transition: background 0.2s ease;
+}
+
+.queue-item:hover {
+    background: #fafbfc;
+}
+
+.queue-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--admin-accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.2rem;
+    font-weight: 600;
+    color: white;
+}
+
+.queue-content {
+    flex-grow: 1;
+}
+
+.queue-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.queue-subtitle {
+    font-size: 0.85rem;
+    color: var(--admin-text-muted);
+}
+
+.queue-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Buttons */
+.btn-premium {
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-premium-primary {
+    background: var(--admin-accent);
+    color: white;
+}
+
+.btn-premium-primary:hover {
+    background: var(--admin-accent-dark);
+}
+
+.btn-premium-outline {
+    background: transparent;
+    border: 2px solid var(--admin-accent);
+    color: var(--admin-accent);
+}
+
+.btn-premium-outline:hover {
+    background: var(--admin-accent-light);
+    color: white;
+}
+
+/* Data Tables */
+.premium-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.premium-table th {
+    text-align: left;
+    padding: 1rem;
+    color: var(--admin-text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #f1f3f5;
+}
+
+.premium-table td {
+    padding: 1.2rem 1rem;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .admin-sidebar {
+        width: 80px;
+        padding: 2rem 0.5rem;
+    }
+
+    .admin-logo,
+    .nav-group-label,
+    .admin-nav-item span {
+        display: none;
+    }
+
+    .admin-main {
+        margin-left: 80px;
+        max-width: calc(100vw - 80px);
+    }
+
+    .admin-nav-item {
+        justify-content: center;
+        padding: 1rem;
+    }
+}
