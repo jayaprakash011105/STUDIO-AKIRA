@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Initialization - STUDIO AKIRA</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body style="padding: 40px; max-width: 800px; margin: 0 auto;">
+    <h1>CMS Database Initialization</h1>
+    <p>This page will initialize your Firestore database with the current website content.</p>
+    <button id="initBtn" class="btn btn-primary btn-large" onclick="initializeDatabase()">Initialize CMS Data</button>
+    <div id="status" style="margin-top: 20px;"></div>
+
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        // Check if user is logged in as admin first
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (!user) {
+                document.getElementById('status').innerHTML = '<p style="color: red;">⚠️ You must be logged in as an admin to initialize the CMS.</p><p><a href="../index.html">Go to Login</a></p>';
+                document.getElementById('initBtn').disabled = true;
+                return;
+            }
+
+            // Check if user is admin
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                    document.getElementById('status').innerHTML = '<p style="color: red;">⚠️ Only admin users can initialize the CMS.</p><p>Current user: ' + user.email + '</p>';
+                    document.getElementById('initBtn').disabled = true;
+                    return;
+                }
+
+                document.getElementById('status').innerHTML = '<p style="color: green;">✓ Logged in as admin: ' + user.email + '</p><p>Ready to initialize CMS database.</p>';
+            } catch (error) {
+                console.error('Error checking user role:', error);
+                document.getElementById('status').innerHTML = '<p style="color: red;">Error checking permissions. Please try again.</p>';
+            }
+        });
+
+        async function initializeDatabase() {
+            const statusDiv = document.getElementById('status');
+            const btn = document.getElementById('initBtn');
+            btn.disabled = true;
+            statusDiv.innerHTML = '<p>Initializing...</p>';
+
+            try {
+                // Initialize Settings
+                await db.collection('websiteContent').doc('settings').set({
+                    activeThemeId: 'standard',
+                    siteName: 'studio akira',
+                    maintenanceMode: false,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                statusDiv.innerHTML += '<p>✓ Settings initialized</p>';
+
+                // Initialize Themes
+                await db.collection('websiteContent').doc('themes').set({
+                    standard: {
+                        id: 'standard',
+                        name: 'Standard Theme',
+                        colors: {
+                            'color-sage-light': '#E8EDE8',
+                            'color-sage': '#A8B5A0',
+                            'color-sage-dark': '#6B8A6B',
+                            'color-sage-darker': '#4A6B4A'
+                        }
+                    },
+                    diwali: {
+                        id: 'diwali',
+                        name: 'Diwali Festival',
+                        colors: {
+                            'color-sage-light': '#FFF4E6',
+                            'color-sage': '#FFB84D',
+                            'color-sage-dark': '#FF8C00',
+                            'color-sage-darker': '#CC6600'
+                        }
+                    },
+                    christmas: {
+                        id: 'christmas',
+                        name: 'Christmas',
+                        colors: {
+                            'color-sage-light': '#F0F8F0',
+                            'color-sage': '#7FB77F',
+                            'color-sage-dark': '#2E7D32',
+                            'color-sage-darker': '#1B5E20'
+                        }
+                    }
+                });
+                statusDiv.innerHTML += '<p>✓ Themes initialized</p>';
+
+                // Initialize Homepage Content
+                await db.collection('websiteContent').doc('homepage').set({
+                    sections: [
+                        {
+                            id: 'hero',
+                            type: 'hero',
+                            order: 1,
+                            active: true,
+                            data: {
+                                title: 'studio<br>akira',
+                                tagline: 'Where light becomes ritual.',
+                                description: 'Handcrafted luxury candles that transform your space into a sanctuary',
+                                buttonText: 'Explore Collections',
+                                buttonLink: 'customer/products.html',
+                                image: 'assets/images/banners/Copilot_20260107_162550.png',
+                                imageAlt: 'Studio Akira - Lavender & Sandal Botanical Composition'
+                            }
+                        },
+                        {
+                            id: 'collections',
+                            type: 'collections',
+                            order: 2,
+                            active: true,
+                            data: {
+                                label: 'SHOP OUR COLLECTIONS',
+                                title: 'Explore Our Candles',
+                                description: 'Thoughtfully created candles for every mood, moment, and ritual.',
+                                buttonText: 'View All Products',
+                                buttonLink: 'customer/products.html',
+                                collections: [
+                                    {
+                                        title: 'Signature Candles',
+                                        description: 'Everyday luxury candles designed for calm, cozy spaces.',
+                                        image: 'assets/images/products/lavender-candle.png',
+                                        link: 'customer/products.html',
+                                        price: 'From ₹599'
+                                    },
+                                    {
+                                        title: 'Ritual Candles',
+                                        description: 'Intention-driven beeswax candles for mindfulness and spiritual rituals.',
+                                        image: 'assets/images/products/cinnamon-candle.png',
+                                        link: 'customer/products.html',
+                                        price: 'From ₹799'
+                                    },
+                                    {
+                                        title: 'Luxury Gift Sets',
+                                        description: 'Curated candle sets made for meaningful gifting.',
+                                        image: 'assets/images/banners/ambiance.png',
+                                        link: 'customer/products.html',
+                                        price: 'From ₹1,299'
+                                    },
+                                    {
+                                        title: 'Seasonal Collection',
+                                        description: 'Limited edition candles inspired by the changing seasons.',
+                                        image: 'assets/images/banners/ambiance.png',
+                                        link: 'customer/products.html',
+                                        price: 'From ₹699'
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            id: 'bestSellers',
+                            type: 'bestSellers',
+                            order: 3,
+                            active: true,
+                            data: {
+                                label: 'BEST SELLERS',
+                                title: 'Most Loved',
+                                description: 'Our most chosen candles — trusted, gifted, and returned to again and again.',
+                                buttonText: 'Shop Best Sellers',
+                                buttonLink: 'customer/products.html',
+                                image: 'assets/images/banners/hero.png',
+                                imageAlt: 'Best Sellers Collection'
+                            }
+                        },
+                        {
+                            id: 'whyUs',
+                            type: 'whyUs',
+                            order: 4,
+                            active: true,
+                            data: {
+                                label: 'THE STUDIO AKIRA PROMISE',
+                                title: 'Why Thousands Trust Our Candles',
+                                description: 'Every candle we craft carries our commitment to quality, sustainability, and your well-being.',
+                                stats: [
+                                    { value: '5000+', label: 'Happy Customers' },
+                                    { value: '100%', label: 'Natural Ingredients' },
+                                    { value: '50+', label: 'Hours Burn Time' },
+                                    { value: '4.9★', label: 'Average Rating' }
+                                ],
+                                features: [
+                                    {
+                                        icon: '🌿',
+                                        title: '100% Natural & Non-Toxic',
+                                        description: 'Made with premium soy wax, organic beeswax, and pure essential oils. No paraffin, no synthetic fragrances, no harmful chemicals.'
+                                    },
+                                    {
+                                        icon: '🖐️',
+                                        title: 'Hand-Poured with Love',
+                                        description: 'Each candle is hand-poured in small batches by skilled artisans. Every piece is inspected for quality before it reaches you.'
+                                    },
+                                    {
+                                        icon: '♻️',
+                                        title: 'Eco-Conscious Packaging',
+                                        description: 'Recyclable glass jars, biodegradable packaging, and reusable containers. We care for the planet as much as we care for your home.'
+                                    }
+                                ],
+                                badges: [
+                                    { icon: '🔒', text: 'Secure Checkout' },
+                                    { icon: '🚚', text: 'Free Shipping 500+' },
+                                    { icon: '↩️', text: 'Easy Returns' },
+                                    { icon: '💬', text: '24/7 Support' }
+                                ]
+                            }
+                        },
+                        {
+                            id: 'gifting',
+                            type: 'gifting',
+                            order: 5,
+                            active: true,
+                            data: {
+                                label: 'GIFTING',
+                                title: 'Gifts That Glow Longer',
+                                description: 'Our luxury gift boxes are thoughtfully curated to celebrate moments, emotions, and connections — perfect for festivals, birthdays, and special occasions.',
+                                buttonText: 'Shop Gift Sets',
+                                buttonLink: 'customer/products.html',
+                                image: 'assets/images/banners/hero.png',
+                                imageAlt: 'Luxury Gift Sets'
+                            }
+                        },
+                        {
+                            id: 'reviews',
+                            type: 'reviews',
+                            order: 6,
+                            active: true,
+                            data: {
+                                label: 'CUSTOMER REVIEWS',
+                                title: 'What Our Customers Say',
+                                rating: '4.9 out of 5',
+                                reviewCount: 'based on 2,847 reviews',
+                                buttonText: 'Read All Reviews',
+                                buttonLink: 'customer/products.html',
+                                reviews: [
+                                    {
+                                        initial: 'P',
+                                        name: 'Priya Sharma',
+                                        location: 'Mumbai',
+                                        avatarColor: 'linear-gradient(135deg, var(--color-sage) 0%, var(--color-sage-dark) 100%)',
+                                        stars: '★★★★★',
+                                        title: 'The calm this candle brings is unreal',
+                                        text: "I've tried many candles, but Studio Akira's lavender candle is something else. The scent is subtle yet fills the entire room. Burns evenly and lasts so long!",
+                                        product: 'Lavender Dreams Candle',
+                                        date: '2 weeks ago'
+                                    },
+                                    {
+                                        initial: 'A',
+                                        name: 'Arjun Menon',
+                                        location: 'Bangalore',
+                                        avatarColor: 'linear-gradient(135deg, #e8b4b8 0%, #d4979c 100%)',
+                                        stars: '★★★★★',
+                                        title: 'Perfect gift — elegant, minimal, soulful',
+                                        text: 'Gifted the luxury set to my mother on her birthday. The packaging was stunning and she absolutely loved the candles. Will definitely order again!',
+                                        product: 'Luxury Gift Set',
+                                        date: '1 month ago'
+                                    },
+                                    {
+                                        initial: 'S',
+                                        name: 'Sneha Reddy',
+                                        location: 'Hyderabad',
+                                        avatarColor: 'linear-gradient(135deg, #a5d6a7 0%, #66bb6a 100%)',
+                                        stars: '★★★★★',
+                                        title: 'You can feel the quality from first light',
+                                        text: "Finally found candles that don't give me headaches! The natural ingredients make such a difference. The cinnamon spice candle is now my daily essential.",
+                                        product: 'Cinnamon Spice Candle',
+                                        date: '3 weeks ago'
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            id: 'newsletter',
+                            type: 'newsletter',
+                            order: 7,
+                            active: true,
+                            data: {
+                                title: 'Stay Connected',
+                                description: 'Join our calm letters — quiet updates, new collections, and exclusive releases.<br>No noise. Only meaningful moments.',
+                                placeholder: 'Enter your email',
+                                buttonText: 'Subscribe'
+                            }
+                        }
+                    ],
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                statusDiv.innerHTML += '<p>✓ Homepage content initialized</p>';
+
+                statusDiv.innerHTML += '<p style="color: green; font-weight: bold; margin-top: 20px;">✓ CMS Database Initialized Successfully!</p>';
+                statusDiv.innerHTML += '<p>You can now close this page and use the Content Management page.</p>';
+                statusDiv.innerHTML += '<p><a href="content.html" class="btn btn-primary" style="display: inline-block; margin-top: 10px;">Go to Content Management</a></p>';
+            } catch (error) {
+                console.error('Initialization error:', error);
+
+                let errorMessage = `<p style="color: red;">✗ Error: ${error.message}</p>`;
+
+                if (error.code === 'permission-denied' || error.message.includes('permission')) {
+                    errorMessage += `
+                        <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <h3 style="margin-top: 0; color: #856404;">🔒 Firestore Permissions Issue</h3>
+                            <p><strong>You need to update your Firestore security rules:</strong></p>
+                            <ol style="text-align: left; margin-left: 20px;">
+                                <li>Go to <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
+                                <li>Select your project</li>
+                                <li>Navigate to <strong>Firestore Database</strong> → <strong>Rules</strong> tab</li>
+                                <li>Add this rule for websiteContent collection:</li>
+                            </ol>
+                            <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; text-align: left;">match /websiteContent/{document=**} {
+  allow read: if true;
+  allow write: if request.auth != null && 
+               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+}</pre>
+                            <p style="margin-top: 10px;"><strong>5.</strong> Click <strong>Publish</strong></p>
+                            <p style="margin-top: 10px;"><strong>6.</strong> Refresh this page and try again</p>
+                        </div>
+                    `;
+                }
+
+                statusDiv.innerHTML += errorMessage;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

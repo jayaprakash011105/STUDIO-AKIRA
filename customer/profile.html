@@ -16,86 +16,553 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <style>
-        .profile-header {
-            background: linear-gradient(135deg, var(--color-sage-light) 0%, var(--color-cream) 100%);
-            padding: 60px 0 40px;
+        /* Profile Page Styles */
+        .profile-hero {
+            background: var(--color-cream);
+            padding: 80px 0 60px;
             margin-top: 70px;
+            position: relative;
+            text-align: center;
         }
 
-        .profile-container {
-            max-width: 900px;
-            margin: 60px auto;
+        .profile-hero h1 {
+            font-size: 3rem;
+            color: var(--color-sage-darker);
+            font-family: var(--font-heading);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .profile-hero p {
+            color: var(--color-text-light);
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Profile Main Container */
+        .profile-main {
+            max-width: 1100px;
+            margin: 40px auto 60px;
             padding: 0 20px;
+            position: relative;
+            z-index: 2;
         }
 
-        .profile-grid {
+        /* Profile Card (User Overview) */
+        .profile-user-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            grid-template-columns: auto 1fr auto;
+            gap: 40px;
+            align-items: center;
             margin-bottom: 30px;
         }
 
-        .profile-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 35px;
-            box-shadow: var(--shadow-md);
-            border: 2px solid transparent;
-            transition: all var(--transition-normal);
-        }
-
-        .profile-card:hover {
-            border-color: var(--color-sage);
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-5px);
-        }
-
-        .profile-card h2 {
-            color: var(--color-sage-darker);
-            margin-bottom: 25px;
-            font-size: 1.6rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
+        .profile-avatar-large {
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--color-sage) 0%, var(--color-sage-dark) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-size: 3.5rem;
             color: white;
-            margin: 0 auto 25px;
-            box-shadow: var(--shadow-md);
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(107, 142, 127, 0.3);
+            border: 5px solid white;
         }
 
-        .info-row {
+        .profile-user-info h2 {
+            font-size: 2rem;
+            color: var(--color-sage-darker);
+            margin-bottom: 8px;
+            font-family: var(--font-heading);
+        }
+
+        .profile-user-info .user-email {
+            color: var(--color-text-light);
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .profile-user-info .user-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .profile-badge {
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .profile-badge.member {
+            background: linear-gradient(135deg, var(--color-sage-light) 0%, #d4e5d8 100%);
+            color: var(--color-sage-darker);
+        }
+
+        .profile-badge.active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .profile-quick-stats {
+            display: flex;
+            gap: 30px;
+        }
+
+        .quick-stat {
+            text-align: center;
+            padding: 20px;
+            background: var(--color-sage-light);
+            border-radius: 16px;
+            min-width: 100px;
+        }
+
+        .quick-stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-sage-darker);
+            font-family: var(--font-heading);
+        }
+
+        .quick-stat-label {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+            margin-top: 4px;
+        }
+
+        /* Profile Content Grid */
+        .profile-content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .profile-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .profile-section:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .profile-section.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--color-sage-light);
+        }
+
+        .section-header h3 {
+            font-size: 1.3rem;
+            color: var(--color-sage-darker);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-heading);
+        }
+
+        .section-header h3 .icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--color-sage-light) 0%, var(--color-sage) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .section-header .edit-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--color-sage);
+            background: transparent;
+            color: var(--color-sage-dark);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .section-header .edit-btn:hover {
+            background: var(--color-sage);
+            color: white;
+        }
+
+        /* Info List */
+        .info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .info-item {
             display: flex;
             justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--color-light-gray);
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        .info-row:last-child {
+        .info-item:last-child {
             border-bottom: none;
+            padding-bottom: 0;
         }
 
-        .info-label {
+        .info-item-label {
             color: var(--color-text-light);
+            font-size: 0.95rem;
             font-weight: 500;
         }
 
-        .info-value {
-            color: var(--color-text);
+        .info-item-value {
+            color: var(--color-sage-darker);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* Address Card */
+        .address-card {
+            background: var(--color-sage-light);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .address-icon {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .address-content {
+            flex: 1;
+        }
+
+        .address-type {
+            font-weight: 600;
+            color: var(--color-sage-darker);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .address-type .default-badge {
+            background: var(--color-sage);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
             font-weight: 600;
         }
 
-        @media (max-width: 768px) {
-            .profile-grid {
+        .address-text {
+            color: var(--color-text-light);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .address-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .address-actions button {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .address-actions .edit-address {
+            background: white;
+            border: 1px solid var(--color-sage);
+            color: var(--color-sage-dark);
+        }
+
+        .address-actions .edit-address:hover {
+            background: var(--color-sage);
+            color: white;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .quick-action {
+            background: var(--color-sage-light);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .quick-action:hover {
+            background: white;
+            border-color: var(--color-sage);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(107, 142, 127, 0.2);
+        }
+
+        .quick-action-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--color-sage) 0%, var(--color-sage-dark) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin: 0 auto 14px;
+        }
+
+        .quick-action-label {
+            color: var(--color-sage-darker);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .quick-action-desc {
+            color: var(--color-text-light);
+            font-size: 0.85rem;
+            margin-top: 6px;
+        }
+
+        /* Logout Button */
+        .logout-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .btn-logout {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+            color: white;
+            transform: scale(1.02);
+        }
+
+        /* Modal Styles */
+        .profile-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .profile-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--color-sage-darker);
+            font-family: var(--font-heading);
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--color-sage-light);
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--color-sage-darker);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-sage);
+            box-shadow: 0 0 0 4px rgba(107, 142, 127, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel {
+            background: var(--color-sage-light);
+            border: none;
+            color: var(--color-sage-darker);
+        }
+
+        .btn-cancel:hover {
+            background: #e5e5e5;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--color-sage) 0%, var(--color-sage-dark) 100%);
+            border: none;
+            color: white;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(107, 142, 127, 0.3);
+        }
+
+        @media (max-width: 900px) {
+            .profile-user-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .profile-quick-stats {
+                justify-content: center;
+            }
+
+            .profile-user-info .user-badges {
+                justify-content: center;
+            }
+
+            .profile-content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
                 grid-template-columns: 1fr;
             }
         }
@@ -103,7 +570,7 @@
 </head>
 
 <body>
-    <!-- Navigation - Updated Structure -->
+    <!-- Navigation -->
     <nav class="navbar">
         <div class="navbar-container">
             <div class="navbar-left">
@@ -141,94 +608,222 @@
         </div>
     </nav>
 
-    <!-- Profile Header -->
-    <section class="profile-header">
+    <!-- Profile Hero -->
+    <section class="profile-hero">
         <div class="container">
-            <h1 style="text-align: center; font-size: 3rem; color: var(--color-sage-darker); margin-bottom: 15px;">My
-                Profile</h1>
-            <p style="text-align: center; color: var(--color-text-light); font-size: 1.1rem;">Manage your account
-                information</p>
+            <h1>My Profile</h1>
+            <p>Manage your profile, orders, and preferences</p>
         </div>
     </section>
 
-    <!-- Profile Content -->
-    <div class="profile-container">
-        <!-- Profile Overview -->
-        <div class="profile-card" style="grid-column: 1/-1; margin-bottom: 30px;">
-            <div class="profile-avatar" id="profile-avatar">👤</div>
-            <h2 style="text-align: center; margin-bottom: 10px;" id="profile-name">Loading...</h2>
-            <p style="text-align: center; color: var(--color-text-light);" id="profile-email">Loading...</p>
+    <!-- Profile Main Content -->
+    <div class="profile-main">
+        <!-- User Card -->
+        <div class="profile-user-card">
+            <div class="profile-avatar-large" id="profile-avatar">U</div>
+            <div class="profile-user-info">
+                <h2 id="profile-name">Loading...</h2>
+                <p class="user-email" id="profile-email">Loading...</p>
+                <div class="user-badges">
+                    <span class="profile-badge member">🌿 Valued Member</span>
+                    <span class="profile-badge active" id="profile-status">✓ Active</span>
+                </div>
+            </div>
+            <div class="profile-quick-stats">
+                <div class="quick-stat">
+                    <div class="quick-stat-value" id="stat-orders">0</div>
+                    <div class="quick-stat-label">Orders</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value" id="stat-spent">₹0</div>
+                    <div class="quick-stat-label">Total Spent</div>
+                </div>
+            </div>
         </div>
 
-        <div class="profile-grid">
+        <!-- Quick Actions Section -->
+        <div class="profile-section full-width" style="margin-bottom: 24px;">
+            <div class="section-header">
+                <h3><span class="icon">⚡</span> Quick Actions</h3>
+            </div>
+            <div class="quick-actions">
+                <div class="quick-action" onclick="window.location.href='orders.html'">
+                    <div class="quick-action-icon">📦</div>
+                    <div class="quick-action-label">My Orders</div>
+                    <div class="quick-action-desc">Track your purchases</div>
+                </div>
+                <div class="quick-action" onclick="window.location.href='cart.html'">
+                    <div class="quick-action-icon">🛒</div>
+                    <div class="quick-action-label">Shopping Cart</div>
+                    <div class="quick-action-desc">View items in cart</div>
+                </div>
+                <div class="quick-action" onclick="window.location.href='products.html'">
+                    <div class="quick-action-icon">🕯️</div>
+                    <div class="quick-action-label">Shop Candles</div>
+                    <div class="quick-action-desc">Explore collections</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Content Grid -->
+        <div class="profile-content-grid">
             <!-- Personal Information -->
-            <div class="profile-card">
-                <h2>👤 Personal Information</h2>
-                <div class="info-row">
-                    <span class="info-label">Full Name</span>
-                    <span class="info-value" id="info-name">-</span>
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3><span class="icon">👤</span> Personal Information</h3>
+                    <button class="edit-btn" onclick="openEditProfileModal()">Edit</button>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Email</span>
-                    <span class="info-value" id="info-email">-</span>
+                <div class="info-list">
+                    <div class="info-item">
+                        <span class="info-item-label">Full Name</span>
+                        <span class="info-item-value" id="info-name">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-item-label">Email Address</span>
+                        <span class="info-item-value" id="info-email">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-item-label">Phone Number</span>
+                        <span class="info-item-value" id="info-phone">Not added</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-item-label">Member Since</span>
+                        <span class="info-item-value" id="stat-member">-</span>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Phone</span>
-                    <span class="info-value" id="info-phone">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Role</span>
-                    <span class="info-value" id="info-role">-</span>
-                </div>
-                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="editProfile()">Edit
-                    Profile</button>
             </div>
 
-            <!-- Account Statistics -->
-            <div class="profile-card">
-                <h2>📊 Account Statistics</h2>
-                <div class="info-row">
-                    <span class="info-label">Total Orders</span>
-                    <span class="info-value" id="stat-orders">0</span>
+            <!-- Saved Addresses -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3><span class="icon">📍</span> Delivery Address</h3>
+                    <button class="edit-btn" onclick="openAddressModal()">+ Add</button>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Total Spent</span>
-                    <span class="info-value" id="stat-spent">₹0</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Member Since</span>
-                    <span class="info-value" id="stat-member">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Account Status</span>
-                    <span class="badge badge-success" id="stat-status">Active</span>
+                <div id="address-container">
+                    <div class="address-card">
+                        <div class="address-icon">🏠</div>
+                        <div class="address-content">
+                            <div class="address-type">
+                                Home <span class="default-badge" id="address-badge"
+                                    style="display: none;">Default</span>
+                            </div>
+                            <div class="address-text" id="default-address">
+                                No address saved yet. Add your delivery address for faster checkout.
+                            </div>
+                            <div class="address-actions" id="address-actions" style="display: none;">
+                                <button class="edit-address" onclick="openAddressModal()">Edit Address</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Saved Addresses -->
-        <div class="profile-card" style="margin-top: 30px;">
-            <h2>📍 Saved Addresses</h2>
-            <div id="addresses-container">
-                <div class="info-row">
-                    <span class="info-label">Default Address</span>
-                    <span class="info-value" id="default-address">No address saved</span>
-                </div>
-            </div>
-            <button class="btn btn-outline-primary" style="width: 100%; margin-top: 20px;" onclick="addAddress()">Add
-                New Address</button>
-        </div>
-
-        <!-- Account Actions -->
-        <div class="profile-card" style="margin-top: 30px;">
-            <h2>⚙️ Account Actions</h2>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <button class="btn btn-secondary" onclick="changePassword()">Change Password</button>
-                <button class="btn btn-outline-primary" onclick="viewOrderHistory()">Order History</button>
-                <button class="btn btn-error" onclick="logout()">Logout</button>
-            </div>
+        <!-- Logout Section -->
+        <div class="logout-section">
+            <button class="btn-logout" onclick="logout()">
+                <span>🚪</span> Sign Out
+            </button>
         </div>
     </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="profile-modal" id="editProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">✕</button>
+            </div>
+            <form id="editProfileForm" onsubmit="saveProfile(event)">
+                <div class="form-group">
+                    <label for="edit-name">Full Name</label>
+                    <input type="text" id="edit-name" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-phone">Phone Number</label>
+                    <input type="tel" id="edit-phone" placeholder="Enter your phone number" pattern="[0-9]{10}">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditProfileModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Address Modal -->
+    <div class="profile-modal" id="addressModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Delivery Address</h2>
+                <button class="modal-close" onclick="closeAddressModal()">✕</button>
+            </div>
+            <form id="addressForm" onsubmit="saveAddress(event)">
+                <div class="form-group">
+                    <label for="address-line1">Address Line 1 *</label>
+                    <input type="text" id="address-line1" placeholder="House/Flat No., Building Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="address-line2">Address Line 2</label>
+                    <input type="text" id="address-line2" placeholder="Street, Locality">
+                </div>
+                <div class="form-group">
+                    <label for="address-city">City *</label>
+                    <input type="text" id="address-city" placeholder="Enter city" required>
+                </div>
+                <div class="form-group">
+                    <label for="address-state">State *</label>
+                    <input type="text" id="address-state" placeholder="Enter state" required>
+                </div>
+                <div class="form-group">
+                    <label for="address-pincode">Pincode *</label>
+                    <input type="text" id="address-pincode" placeholder="Enter pincode" pattern="[0-9]{6}" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAddressModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Save Address</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3 class="footer-logo">studio akira</h3>
+                    <p>Handcrafted natural candles made with love and care.</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Information</h4>
+                    <ul class="footer-links">
+                        <li><a href="../about.html">About Us</a></li>
+                        <li><a href="../contact.html">Contact</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul class="footer-links">
+                        <li><a href="products.html">All Products</a></li>
+                        <li><a href="products.html">Collections</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Account</h4>
+                    <ul class="footer-links">
+                        <li><a href="profile.html">My Profile</a></li>
+                        <li><a href="orders.html">My Orders</a></li>
+                        <li><a href="cart.html">Shopping Cart</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Studio Akira. Natural Handcrafted Candles. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- Loading Spinner -->
     <div id="loading-spinner">
@@ -242,6 +837,7 @@
 
     <script>
         let currentUser;
+        let currentUserData;
 
         // Check authentication
         checkRole(['customer']).then(user => {
@@ -256,31 +852,38 @@
             try {
                 const userDoc = await db.collection('users').doc(currentUser.uid).get();
                 if (userDoc.exists) {
-                    const userData = userDoc.data();
+                    currentUserData = userDoc.data();
 
                     // Update profile display
-                    document.getElementById('profile-name').textContent = userData.name || 'User';
-                    document.getElementById('profile-email').textContent = userData.email || currentUser.email;
-                    document.getElementById('profile-avatar').textContent = (userData.name || 'U')[0].toUpperCase();
+                    document.getElementById('profile-name').textContent = currentUserData.name || 'User';
+                    document.getElementById('profile-email').textContent = currentUserData.email || currentUser.email;
+                    document.getElementById('profile-avatar').textContent = (currentUserData.name || 'U')[0].toUpperCase();
 
                     // Update info
-                    document.getElementById('info-name').textContent = userData.name || '-';
-                    document.getElementById('info-email').textContent = userData.email || currentUser.email;
-                    document.getElementById('info-phone').textContent = userData.phone || '-';
-                    document.getElementById('info-role').textContent = (userData.role || 'customer').charAt(0).toUpperCase() + (userData.role || 'customer').slice(1);
+                    document.getElementById('info-name').textContent = currentUserData.name || '-';
+                    document.getElementById('info-email').textContent = currentUserData.email || currentUser.email;
+                    document.getElementById('info-phone').textContent = currentUserData.phone || 'Not added';
 
                     // Update member since
-                    const createdAt = userData.createdAt ? new Date(userData.createdAt.toDate()).toLocaleDateString() : 'N/A';
+                    const createdAt = currentUserData.createdAt ? new Date(currentUserData.createdAt.toDate()).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
                     document.getElementById('stat-member').textContent = createdAt;
 
                     // Update status
-                    const statusBadge = document.getElementById('stat-status');
-                    statusBadge.textContent = userData.status || 'active';
-                    statusBadge.className = `badge badge-${userData.status === 'active' ? 'success' : 'warning'}`;
+                    const statusBadge = document.getElementById('profile-status');
+                    if (currentUserData.status === 'active') {
+                        statusBadge.textContent = '✓ Active';
+                        statusBadge.className = 'profile-badge active';
+                    } else {
+                        statusBadge.textContent = '⏳ Pending';
+                        statusBadge.style.background = '#fef3c7';
+                        statusBadge.style.color = '#d97706';
+                    }
 
                     // Update address
-                    if (userData.address) {
-                        document.getElementById('default-address').textContent = userData.address;
+                    if (currentUserData.address && currentUserData.address.trim() !== '') {
+                        document.getElementById('default-address').textContent = currentUserData.address;
+                        document.getElementById('address-badge').style.display = 'inline';
+                        document.getElementById('address-actions').style.display = 'flex';
                     }
                 }
             } catch (error) {
@@ -308,21 +911,115 @@
             }
         }
 
-        function editProfile() {
-            showToast('Profile editing will be available soon!', 'info');
+        // Edit Profile Modal Functions
+        function openEditProfileModal() {
+            document.getElementById('edit-name').value = currentUserData?.name || '';
+            document.getElementById('edit-phone').value = currentUserData?.phone || '';
+            document.getElementById('editProfileModal').classList.add('active');
         }
 
-        function addAddress() {
-            showToast('Address management will be available soon!', 'info');
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').classList.remove('active');
         }
 
-        function changePassword() {
-            showToast('Password change will be available soon!', 'info');
+        async function saveProfile(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('edit-name').value.trim();
+            const phone = document.getElementById('edit-phone').value.trim();
+
+            if (!name) {
+                showToast('Please enter your name', 'error');
+                return;
+            }
+
+            try {
+                await db.collection('users').doc(currentUser.uid).update({
+                    name: name,
+                    phone: phone,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('Profile updated successfully!', 'success');
+                closeEditProfileModal();
+                loadProfile(); // Reload profile data
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showToast('Error updating profile', 'error');
+            }
         }
 
-        function viewOrderHistory() {
-            window.location.href = 'orders.html';
+        // Address Modal Functions
+        function openAddressModal() {
+            // Parse existing address if available
+            if (currentUserData?.address) {
+                const parts = currentUserData.address.split(', ');
+                if (parts.length >= 4) {
+                    document.getElementById('address-line1').value = parts[0] || '';
+                    document.getElementById('address-line2').value = parts[1] || '';
+                    document.getElementById('address-city').value = parts[2] || '';
+                    // Extract state and pincode
+                    const statePin = parts.slice(3).join(', ');
+                    const pincodeMatch = statePin.match(/(\d{6})/);
+                    if (pincodeMatch) {
+                        document.getElementById('address-pincode').value = pincodeMatch[1];
+                        document.getElementById('address-state').value = statePin.replace(pincodeMatch[1], '').replace(' - ', '').trim();
+                    } else {
+                        document.getElementById('address-state').value = statePin;
+                    }
+                }
+            } else {
+                document.getElementById('addressForm').reset();
+            }
+            document.getElementById('addressModal').classList.add('active');
         }
+
+        function closeAddressModal() {
+            document.getElementById('addressModal').classList.remove('active');
+        }
+
+        async function saveAddress(event) {
+            event.preventDefault();
+
+            const line1 = document.getElementById('address-line1').value.trim();
+            const line2 = document.getElementById('address-line2').value.trim();
+            const city = document.getElementById('address-city').value.trim();
+            const state = document.getElementById('address-state').value.trim();
+            const pincode = document.getElementById('address-pincode').value.trim();
+
+            if (!line1 || !city || !state || !pincode) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            // Format address
+            const fullAddress = line2
+                ? `${line1}, ${line2}, ${city}, ${state} - ${pincode}`
+                : `${line1}, ${city}, ${state} - ${pincode}`;
+
+            try {
+                await db.collection('users').doc(currentUser.uid).update({
+                    address: fullAddress,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('Address saved successfully!', 'success');
+                closeAddressModal();
+                loadProfile(); // Reload profile data
+            } catch (error) {
+                console.error('Error saving address:', error);
+                showToast('Error saving address', 'error');
+            }
+        }
+
+        // Close modals on outside click
+        document.getElementById('editProfileModal').addEventListener('click', function (e) {
+            if (e.target === this) closeEditProfileModal();
+        });
+
+        document.getElementById('addressModal').addEventListener('click', function (e) {
+            if (e.target === this) closeAddressModal();
+        });
 
         // Profile dropdown toggle
         function toggleProfileMenu(event) {
@@ -344,4 +1041,3 @@
 </body>
 
 </html>
-```
