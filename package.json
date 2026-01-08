@@ -1,0 +1,18 @@
+{
+    "name": "studio-akira",
+    "version": "1.0.0",
+    "description": "STUDIO AKIRA - Natural Handcrafted Candles E-commerce Platform",
+    "scripts": {
+        "start": "python -m http.server 8000",
+        "build": "echo 'No build needed - static site'",
+        "predeploy": "echo 'Ready to deploy'"
+    },
+    "keywords": [
+        "candles",
+        "ecommerce",
+        "firebase"
+    ],
+    "author": "STUDIO AKIRA",
+    "license": "MIT",
+    "devDependencies": {}
+}
