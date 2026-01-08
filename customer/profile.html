@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - studio akira</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .profile-header {
+            background: linear-gradient(135deg, var(--color-sage-light) 0%, var(--color-cream) 100%);
+            padding: 60px 0 40px;
+            margin-top: 70px;
+        }
+
+        .profile-container {
+            max-width: 900px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 35px;
+            box-shadow: var(--shadow-md);
+            border: 2px solid transparent;
+            transition: all var(--transition-normal);
+        }
+
+        .profile-card:hover {
+            border-color: var(--color-sage);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-5px);
+        }
+
+        .profile-card h2 {
+            color: var(--color-sage-darker);
+            margin-bottom: 25px;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-sage) 0%, var(--color-sage-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            margin: 0 auto 25px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--color-light-gray);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--color-text-light);
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation - Updated Structure -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="home.html" class="navbar-logo">studio akira</a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="home.html" class="navbar-link">Home</a></li>
+                <li><a href="products.html" class="navbar-link">Collections</a></li>
+                <li><a href="../about.html" class="navbar-link">About</a></li>
+                <li><a href="../contact.html" class="navbar-link">Contact</a></li>
+                <li><a href="orders.html" class="navbar-link">Orders</a></li>
+            </ul>
+            <div class="navbar-right">
+                <a href="cart.html" class="navbar-icon" title="Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                </a>
+                <div class="navbar-profile-dropdown">
+                    <button class="navbar-icon" onclick="toggleProfileMenu(event)" title="Profile">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </button>
+                    <div class="profile-dropdown-menu" id="profileMenu">
+                        <a href="profile.html">Profile</a>
+                        <a href="#" onclick="logout(); return false;">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Header -->
+    <section class="profile-header">
+        <div class="container">
+            <h1 style="text-align: center; font-size: 3rem; color: var(--color-sage-darker); margin-bottom: 15px;">My
+                Profile</h1>
+            <p style="text-align: center; color: var(--color-text-light); font-size: 1.1rem;">Manage your account
+                information</p>
+        </div>
+    </section>
+
+    <!-- Profile Content -->
+    <div class="profile-container">
+        <!-- Profile Overview -->
+        <div class="profile-card" style="grid-column: 1/-1; margin-bottom: 30px;">
+            <div class="profile-avatar" id="profile-avatar">👤</div>
+            <h2 style="text-align: center; margin-bottom: 10px;" id="profile-name">Loading...</h2>
+            <p style="text-align: center; color: var(--color-text-light);" id="profile-email">Loading...</p>
+        </div>
+
+        <div class="profile-grid">
+            <!-- Personal Information -->
+            <div class="profile-card">
+                <h2>👤 Personal Information</h2>
+                <div class="info-row">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value" id="info-name">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" id="info-email">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phone</span>
+                    <span class="info-value" id="info-phone">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Role</span>
+                    <span class="info-value" id="info-role">-</span>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="editProfile()">Edit
+                    Profile</button>
+            </div>
+
+            <!-- Account Statistics -->
+            <div class="profile-card">
+                <h2>📊 Account Statistics</h2>
+                <div class="info-row">
+                    <span class="info-label">Total Orders</span>
+                    <span class="info-value" id="stat-orders">0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Total Spent</span>
+                    <span class="info-value" id="stat-spent">₹0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Member Since</span>
+                    <span class="info-value" id="stat-member">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Account Status</span>
+                    <span class="badge badge-success" id="stat-status">Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Addresses -->
+        <div class="profile-card" style="margin-top: 30px;">
+            <h2>📍 Saved Addresses</h2>
+            <div id="addresses-container">
+                <div class="info-row">
+                    <span class="info-label">Default Address</span>
+                    <span class="info-value" id="default-address">No address saved</span>
+                </div>
+            </div>
+            <button class="btn btn-outline-primary" style="width: 100%; margin-top: 20px;" onclick="addAddress()">Add
+                New Address</button>
+        </div>
+
+        <!-- Account Actions -->
+        <div class="profile-card" style="margin-top: 30px;">
+            <h2>⚙️ Account Actions</h2>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="changePassword()">Change Password</button>
+                <button class="btn btn-outline-primary" onclick="viewOrderHistory()">Order History</button>
+                <button class="btn btn-error" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/customer.js"></script>
+
+    <script>
+        let currentUser;
+
+        // Check authentication
+        checkRole(['customer']).then(user => {
+            if (user) {
+                currentUser = user;
+                loadProfile();
+                loadStats();
+            }
+        });
+
+        async function loadProfile() {
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+
+                    // Update profile display
+                    document.getElementById('profile-name').textContent = userData.name || 'User';
+                    document.getElementById('profile-email').textContent = userData.email || currentUser.email;
+                    document.getElementById('profile-avatar').textContent = (userData.name || 'U')[0].toUpperCase();
+
+                    // Update info
+                    document.getElementById('info-name').textContent = userData.name || '-';
+                    document.getElementById('info-email').textContent = userData.email || currentUser.email;
+                    document.getElementById('info-phone').textContent = userData.phone || '-';
+                    document.getElementById('info-role').textContent = (userData.role || 'customer').charAt(0).toUpperCase() + (userData.role || 'customer').slice(1);
+
+                    // Update member since
+                    const createdAt = userData.createdAt ? new Date(userData.createdAt.toDate()).toLocaleDateString() : 'N/A';
+                    document.getElementById('stat-member').textContent = createdAt;
+
+                    // Update status
+                    const statusBadge = document.getElementById('stat-status');
+                    statusBadge.textContent = userData.status || 'active';
+                    statusBadge.className = `badge badge-${userData.status === 'active' ? 'success' : 'warning'}`;
+
+                    // Update address
+                    if (userData.address) {
+                        document.getElementById('default-address').textContent = userData.address;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showToast('Error loading profile', 'error');
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const ordersSnapshot = await db.collection('orders')
+                    .where('customerId', '==', currentUser.uid)
+                    .get();
+
+                let totalSpent = 0;
+                ordersSnapshot.forEach(doc => {
+                    const order = doc.data();
+                    totalSpent += order.total || 0;
+                });
+
+                document.getElementById('stat-orders').textContent = ordersSnapshot.size;
+                document.getElementById('stat-spent').textContent = formatPrice(totalSpent);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function editProfile() {
+            showToast('Profile editing will be available soon!', 'info');
+        }
+
+        function addAddress() {
+            showToast('Address management will be available soon!', 'info');
+        }
+
+        function changePassword() {
+            showToast('Password change will be available soon!', 'info');
+        }
+
+        function viewOrderHistory() {
+            window.location.href = 'orders.html';
+        }
+
+        // Profile dropdown toggle
+        function toggleProfileMenu(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function (event) {
+            const menu = document.getElementById('profileMenu');
+            if (menu && menu.classList.contains('show')) {
+                if (!event.target.closest('.navbar-profile-dropdown')) {
+                    menu.classList.remove('show');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
+```

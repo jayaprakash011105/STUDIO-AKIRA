@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - studio akira</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .orders-header {
+            background: linear-gradient(135deg, var(--color-sage-light) 0%, var(--color-cream) 100%);
+            padding: 60px 0 40px;
+            margin-top: 70px;
+        }
+
+        .orders-container {
+            max-width: 1000px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .order-filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .order-item {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-sm);
+            border-left: 5px solid var(--color-sage);
+            transition: all var(--transition-normal);
+        }
+
+        .order-item:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateX(5px);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--color-sage-light);
+        }
+
+        .order-id {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--color-sage-darker);
+        }
+
+        .order-products {
+            margin: 20px 0;
+        }
+
+        .order-product {
+            display: flex;
+            gap: 20px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--color-light-gray);
+        }
+
+        .order-product:last-child {
+            border-bottom: none;
+        }
+
+        .order-product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid var(--color-sage-light);
+        }
+
+        .order-total {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--color-sage-dark);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation - Updated Structure -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="home.html" class="navbar-logo">studio akira</a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="home.html" class="navbar-link">Home</a></li>
+                <li><a href="products.html" class="navbar-link">Collections</a></li>
+                <li><a href="../about.html" class="navbar-link">About</a></li>
+                <li><a href="../contact.html" class="navbar-link">Contact</a></li>
+                <li><a href="orders.html" class="navbar-link">Orders</a></li>
+            </ul>
+            <div class="navbar-right">
+                <a href="cart.html" class="navbar-icon" title="Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                </a>
+                <div class="navbar-profile-dropdown">
+                    <button class="navbar-icon" onclick="toggleProfileMenu(event)" title="Profile">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </button>
+                    <div class="profile-dropdown-menu" id="profileMenu">
+                        <a href="profile.html">Profile</a>
+                        <a href="#" onclick="logout(); return false;">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Orders Header -->
+    <section class="orders-header">
+        <div class="container">
+            <h1 style="text-align: center; font-size: 3rem; color: var(--color-sage-darker); margin-bottom: 15px;">My
+                Orders</h1>
+            <p style="text-align: center; color: var(--color-text-light); font-size: 1.1rem;">Track and manage your
+                orders</p>
+        </div>
+    </section>
+
+    <!-- Orders Content -->
+    <div class="orders-container">
+        <!-- Filters -->
+        <div class="order-filters">
+            <button class="chip active" onclick="filterOrders('all')">All Orders</button>
+            <button class="chip" onclick="filterOrders('pending')">Pending</button>
+            <button class="chip" onclick="filterOrders('approved')">Approved</button>
+            <button class="chip" onclick="filterOrders('shipped')">Shipped</button>
+            <button class="chip" onclick="filterOrders('delivered')">Delivered</button>
+        </div>
+
+        <!-- Orders List -->
+        <div id="orders-container">
+            <!-- Orders will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/customer.js"></script>
+
+    <script>
+        let currentFilter = 'all';
+        let currentUser;
+
+        // Check authentication
+        checkRole(['customer']).then(user => {
+            if (user) {
+                currentUser = user;
+                loadOrders();
+            }
+        });
+
+        async function loadOrders() {
+            try {
+                let query = db.collection('orders').where('customerId', '==', currentUser.uid);
+
+                if (currentFilter !== 'all') {
+                    query = query.where('status', '==', currentFilter);
+                }
+
+                const snapshot = await query.orderBy('createdAt', 'desc').get();
+                const container = document.getElementById('orders-container');
+
+                if (snapshot.empty) {
+                    container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📦</div>
+              <h3 class="empty-state-title">No orders found</h3>
+              <p class="empty-state-text">Start shopping to see your orders here!</p>
+              <a href="products.html" class="btn btn-primary btn-large">Shop Now</a>
+            </div>
+          `;
+                    return;
+                }
+
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const order = doc.data();
+                    const orderDiv = createOrderCard(doc.id, order);
+                    container.appendChild(orderDiv);
+                });
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                document.getElementById('orders-container').innerHTML = '<div class="empty-state"><p>Unable to load orders. Please refresh the page.</p></div>';
+            }
+        }
+
+        function createOrderCard(orderId, order) {
+            const div = document.createElement('div');
+            div.className = 'order-item';
+
+            const statusColors = {
+                'pending': 'warning',
+                'approved': 'info',
+                'shipped': 'primary',
+                'delivered': 'success'
+            };
+
+            const date = order.createdAt ? new Date(order.createdAt.toDate()).toLocaleDateString() : 'N/A';
+
+            div.innerHTML = `
+        <div class="order-header">
+          <div>
+            <div class="order-id">Order #${orderId.substring(0, 8).toUpperCase()}</div>
+            <p style="color: var(--color-text-light); margin-top: 5px;">Placed on ${date}</p>
+          </div>
+          <span class="badge badge-${statusColors[order.status] || 'secondary'}">${order.status}</span>
+        </div>
+        
+        <div class="order-products">
+          ${order.items ? order.items.map(item => `
+            <div class="order-product">
+              <img src="../assets/images/products/lavender-candle.png" alt="${item.name}" class="order-product-image">
+              <div style="flex: 1;">
+                <h4 style="color: var(--color-sage-darker); margin-bottom: 5px;">${item.name}</h4>
+                <p style="color: var(--color-text-light); font-size: 0.9rem;">Quantity: ${item.quantity}</p>
+              </div>
+              <div style="font-weight: 600; color: var(--color-sage-dark);">${formatPrice(item.price * item.quantity)}</div>
+            </div>
+          `).join('') : ''}
+        </div>
+        
+        <div class="order-footer">
+          <div>
+            <p style="color: var(--color-text-light); margin-bottom: 5px;">Payment: ${order.paymentMethod || 'COD'}</p>
+            <p style="color: var(--color-text-light);">Delivery: ${order.address || 'N/A'}</p>
+          </div>
+          <div class="order-total">Total: ${formatPrice(order.total)}</div>
+        </div>
+      `;
+
+            return div;
+        }
+
+        function filterOrders(status) {
+            currentFilter = status;
+
+            // Update active chip
+            document.querySelectorAll('.chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            loadOrders();
+        }
+
+        // Profile dropdown toggle
+        function toggleProfileMenu(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function (event) {
+            const menu = document.getElementById('profileMenu');
+            if (menu && menu.classList.contains('show')) {
+                if (!event.target.closest('.navbar-profile-dropdown')) {
+                    menu.classList.remove('show');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

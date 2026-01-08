@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Dashboard - STUDIO AKIRA</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">studio akira</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a href="dashboard.html" class="sidebar-link active">Dashboard</a></li>
+            <li class="sidebar-item"><a href="orders.html" class="sidebar-link">Production Queue</a></li>
+            <li class="sidebar-item"><a href="production.html" class="sidebar-link">Production Status</a></li>
+            <li class="sidebar-item"><a href="inventory.html" class="sidebar-link">Raw Materials</a></li>
+            <li class="sidebar-item"><a href="batches.html" class="sidebar-link">Batch Tracking</a></li>
+            <li class="sidebar-item"><a href="#" class="sidebar-link" onclick="logout()">Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1>Production Dashboard</h1>
+        <p class="mb-lg">Manage candle production and inventory</p>
+
+        <!-- Dashboard Stats -->
+        <div class="grid grid-4 gap-md mb-lg">
+            <div class="dashboard-card">
+                <div class="dashboard-card-title">Pending Orders</div>
+                <div class="dashboard-card-value" id="pendingOrders">0</div>
+                <div class="dashboard-card-subtitle">Awaiting production</div>
+            </div>
+            <div class="dashboard-card"
+                style="background: linear-gradient(135deg, var(--color-info), var(--color-primary));">
+                <div class="dashboard-card-title">In Production</div>
+                <div class="dashboard-card-value" id="inProduction">0</div>
+                <div class="dashboard-card-subtitle">Currently making</div>
+            </div>
+            <div class="dashboard-card"
+                style="background: linear-gradient(135deg, var(--color-success), var(--color-sage));">
+                <div class="dashboard-card-title">Ready to Ship</div>
+                <div class="dashboard-card-value" id="readyToShip">0</div>
+                <div class="dashboard-card-subtitle">Packaged</div>
+            </div>
+            <div class="dashboard-card"
+                style="background: linear-gradient(135deg, var(--color-warning), var(--color-accent-gold));">
+                <div class="dashboard-card-title">Low Stock Items</div>
+                <div class="dashboard-card-value" id="lowStock">0</div>
+                <div class="dashboard-card-subtitle">Need reorder</div>
+            </div>
+        </div>
+
+        <!-- Product Demand -->
+        <div class="table-container mb-lg">
+            <h2 class="p-md" style="margin: 0; border-bottom: 1px solid var(--color-light-gray);">Product Demand
+                (SKU-wise)</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Quantity Needed</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="productDemand">
+                    <tr>
+                        <td colspan="4" class="text-center">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Production Batches -->
+        <div class="table-container">
+            <h2 class="p-md" style="margin: 0; border-bottom: 1px solid var(--color-light-gray);">Recent Production
+                Batches</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Batch Number</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Started</th>
+                    </tr>
+                </thead>
+                <tbody id="recentBatches">
+                    <tr>
+                        <td colspan="5" class="text-center">No batches yet</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        // Check manufacturer authentication
+        checkRole(['manufacturer']).then(user => {
+            if (user) {
+                loadDashboardData();
+            }
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load pending orders (assigned to manufacturer)
+                const pendingSnapshot = await db.collection('orders')
+                    .where('status', 'in', ['approved', 'pending'])
+                    .get();
+                document.getElementById('pendingOrders').textContent = pendingSnapshot.size;
+
+                // Load in production orders
+                const inProductionSnapshot = await db.collection('orders')
+                    .where('productionStatus', '==', 'in_production')
+                    .get();
+                document.getElementById('inProduction').textContent = inProductionSnapshot.size;
+
+                // Load ready to ship orders
+                const readySnapshot = await db.collection('orders')
+                    .where('productionStatus', '==', 'packaged')
+                    .get();
+                document.getElementById('readyToShip').textContent = readySnapshot.size;
+
+                // Load low stock items (placeholder - would need raw materials collection)
+                document.getElementById('lowStock').textContent = '0';
+
+                // Load product demand
+                loadProductDemand();
+
+                // Load recent batches
+                loadRecentBatches();
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('Error loading dashboard data', 'error');
+            }
+        }
+
+        async function loadProductDemand() {
+            const ordersSnapshot = await db.collection('orders')
+                .where('status', 'in', ['approved', 'pending', 'in_production'])
+                .get();
+
+            const tbody = document.getElementById('productDemand');
+
+            if (ordersSnapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No pending production</td></tr>';
+                return;
+            }
+
+            // Aggregate product quantities
+            const productDemand = {};
+            ordersSnapshot.forEach(doc => {
+                const order = doc.data();
+                order.items?.forEach(item => {
+                    if (!productDemand[item.productId]) {
+                        productDemand[item.productId] = {
+                            name: item.productName,
+                            quantity: 0
+                        };
+                    }
+                    productDemand[item.productId].quantity += item.quantity;
+                });
+            });
+
+            let html = '';
+            Object.entries(productDemand).forEach(([productId, data]) => {
+                const priority = data.quantity > 10 ? 'High' : data.quantity > 5 ? 'Medium' : 'Low';
+                const priorityBadge = priority === 'High' ? 'badge-error' : priority === 'Medium' ? 'badge-warning' : 'badge-info';
+
+                html += `
+          <tr>
+            <td>${data.name}</td>
+            <td>${data.quantity} units</td>
+            <td><span class="badge ${priorityBadge}">${priority}</span></td>
+            <td><span class="badge badge-warning">Pending</span></td>
+          </tr>
+        `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        async function loadRecentBatches() {
+            try {
+                const batchesSnapshot = await db.collection('productionBatches')
+                    .orderBy('startedAt', 'desc')
+                    .limit(5)
+                    .get();
+
+                const tbody = document.getElementById('recentBatches');
+
+                if (batchesSnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No batches yet</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                batchesSnapshot.forEach(doc => {
+                    const batch = doc.data();
+                    html += `
+            <tr>
+              <td>${batch.batchNumber}</td>
+              <td>${batch.productId}</td>
+              <td>${batch.quantity}</td>
+              <td>${getStatusBadge(batch.status)}</td>
+              <td>${formatDate(batch.startedAt)}</td>
+            </tr>
+          `;
+                });
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading batches:', error);
+            }
+        }
+    </script>
+</body>
+
+</html>

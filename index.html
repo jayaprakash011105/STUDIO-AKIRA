@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>studio akira - Natural Handcrafted Candles</title>
+  <meta name="description" content="Handcrafted luxury candles that transform your space into a sanctuary">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+  <!-- Navigation - Updated Structure -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-left">
+        <a href="index.html" class="navbar-logo">studio akira</a>
+      </div>
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Home</a></li>
+        <li><a href="#" onclick="requireLogin('collections'); return false;" class="navbar-link">Collections</a></li>
+        <li><a href="about.html" class="navbar-link">About</a></li>
+        <li><a href="contact.html" class="navbar-link">Contact</a></li>
+        <li><a href="#" onclick="requireLogin('orders'); return false;" class="navbar-link">Orders</a></li>
+      </ul>
+      <div class="navbar-right">
+        <a href="#" onclick="requireLogin('cart'); return false;" class="navbar-icon" title="Cart">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        </a>
+        <div class="navbar-profile-dropdown">
+          <button class="navbar-icon" onclick="toggleProfileMenu(event)" title="Profile">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </button>
+          <div class="profile-dropdown-menu" id="profileMenu">
+            <a href="#" onclick="requireLogin('profile'); return false;">Profile</a>
+            <a href="#" onclick="openLoginModal(); return false;">Login</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section - EXACT Reference Design from Image 3 -->
+  <section class="hero-main">
+    <div class="container">
+      <div class="hero-main-grid">
+        <!-- Left Content -->
+        <div class="hero-main-content">
+          <h1 class="hero-main-title">studio<br>akira</h1>
+          <p class="hero-main-tagline">Where light becomes ritual.</p>
+          <p class="hero-main-description">Handcrafted luxury candles that transform your space into a sanctuary</p>
+          <button class="btn btn-primary btn-pill btn-large" onclick="requireLogin('explore')">Explore
+            Collections</button>
+        </div>
+
+        <!-- Right Product Image -->
+
+        <div class="hero-main-image">
+          <img src="assets/images/banners/Copilot_20260107_162550.png"
+            alt="Studio Akira - Lavender & Sandal Botanical Composition">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits Section - "What are the benefits?" -->
+  <section class="section benefits-section">
+    <div class="container">
+      <p class="section-label">FEATURES OF STUDIO</p>
+      <h2 class="section-title">What are the benefits?</h2>
+      <p class="section-description">
+        Experience the natural difference with our handcrafted candles made from 17 fully natural ingredients.
+        Each candle is carefully crafted to bring warmth and serenity to your space.
+      </p>
+
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-image">
+            <img src="assets/images/products/lavender-candle.png" alt="Natural Ingredients">
+          </div>
+          <h3 class="benefit-title">100% Natural</h3>
+          <p class="benefit-text">Made with pure soy wax and natural essential oils, free from harmful chemicals and
+            toxins.</p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-image">
+            <img src="assets/images/products/cinnamon-candle.png" alt="Hand Poured">
+          </div>
+          <h3 class="benefit-title">Hand-Poured</h3>
+          <p class="benefit-text">Each candle is carefully hand-poured with attention to detail and love in every step.
+          </p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-image">
+            <img src="assets/images/banners/ambiance.png" alt="Eco Friendly">
+          </div>
+          <h3 class="benefit-title">Eco-Friendly</h3>
+          <p class="benefit-text">Sustainable ingredients and recyclable packaging for a better tomorrow and cleaner
+            planet.</p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-image">
+            <img src="assets/images/banners/ambiance.png" alt="Long Lasting">
+          </div>
+          <h3 class="benefit-title">Long Lasting</h3>
+          <p class="benefit-text">Premium quality ensures a clean, even burn for up to 50 hours of aromatic bliss.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Collection Section -->
+  <section class="featured-collection-section">
+    <div class="container">
+      <div class="featured-collection-grid">
+        <div class="featured-collection-content">
+          <p class="section-label">COLLECTION</p>
+          <h2 class="featured-collection-title">Herbal</h2>
+          <p class="featured-collection-text">
+            Discover our herbal collection featuring natural ingredients that bring calm and serenity to your space.
+            Each candle is crafted with care using traditional methods and the finest botanical extracts.
+          </p>
+          <button class="btn btn-primary btn-large" onclick="requireLogin('shop')">Shop Now</button>
+        </div>
+        <div class="featured-collection-image">
+          <img src="assets/images/banners/hero.png" alt="Herbal Collection">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Showcase Section -->
+  <section class="section products-showcase-section">
+    <div class="container">
+      <div class="products-showcase-image">
+        <img src="assets/images/banners/hero.png" alt="Our Products">
+      </div>
+
+      <div class="products-showcase-text">
+        <p>
+          Aenean scelerisque sem. Cras faucibus orci vel lorem, in ipsum porta
+          rutrum placerat. Aenean posuere tristique aliquo.
+        </p>
+        <button class="btn btn-primary" onclick="requireLogin('shop')">Read More</button>
+        <button class="btn btn-accent">Contact Us</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="section testimonials-section">
+    <div class="container">
+      <div class="testimonials-images">
+        <img src="assets/images/banners/ambiance.png" alt="Customer 1" class="testimonial-avatar">
+        <img src="assets/images/banners/ambiance.png" alt="Customer 2" class="testimonial-avatar">
+        <img src="assets/images/banners/ambiance.png" alt="Customer 3" class="testimonial-avatar">
+      </div>
+      <p class="testimonials-text">
+        "Absolutely love these candles! The natural scent fills my entire home with a calming aroma.
+        Best purchase I've made this year!"
+      </p>
+      <button class="btn btn-primary" onclick="requireLogin('shop')">Explore More</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h3 class="footer-logo">studio akira</h3>
+          <p>Handcrafted natural candles made with love and care.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Information</h4>
+          <ul class="footer-links">
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Shop</h4>
+          <ul class="footer-links">
+            <li><a href="#" onclick="requireLogin('shop'); return false;">All Products</a></li>
+            <li><a href="#" onclick="requireLogin('shop'); return false;">Collections</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Follow Us</h4>
+          <ul class="footer-links">
+            <li><a href="#">Instagram</a></li>
+            <li><a href="#">Facebook</a></li>
+            <li><a href="#">Pinterest</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 Studio Akira. Natural Handcrafted Candles. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+      <div class="modal-header">
+        <h2 class="modal-title">Welcome to Studio Akira</h2>
+        <p style="color: var(--color-gray); font-size: 0.95rem;">Please login to continue</p>
+      </div>
+      <div class="modal-body">
+        <!-- Role Selection -->
+        <div id="roleSelection">
+          <p class="text-center mb-md" style="font-weight: 500;">Select your role to continue</p>
+          <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+            <button class="btn btn-primary" style="width: 100%;" onclick="selectRole('customer')">Customer</button>
+            <div class="grid grid-2 gap-md">
+              <button class="btn btn-secondary" onclick="selectRole('manufacturer')">Manufacturer</button>
+              <button class="btn btn-secondary" onclick="selectRole('delivery')">Delivery Partner</button>
+            </div>
+          </div>
+          <div class="text-center mt-lg">
+            <p style="margin-bottom: var(--spacing-sm); color: var(--color-gray);">First time here?</p>
+            <button class="btn btn-outline-primary" style="width: 100%;" onclick="showSignupForm()">Create New
+              Account</button>
+          </div>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="hidden">
+          <input type="hidden" id="selectedRole">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="loginEmail" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="loginPassword" class="form-input" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+          <p class="text-center mt-md">
+            <a href="#" onclick="showSignupForm(); return false;"
+              style="display: block; margin-bottom: var(--spacing-sm);">New User? Create Account</a>
+            <a href="#" onclick="showRoleSelection(); return false;"
+              style="font-size: 0.9em; color: var(--color-gray);">← Back to role selection</a>
+          </p>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" class="hidden">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="signupName" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="signupEmail" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" id="signupPhone" class="form-input" placeholder="10-digit mobile number" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="signupPassword" class="form-input" minlength="6" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select id="signupRole" class="form-select" required>
+              <option value="customer">Customer</option>
+              <option value="manufacturer">Manufacturer</option>
+              <option value="delivery">Delivery Partner</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
+          <p class="text-center mt-md">
+            <a href="#" onclick="showRoleSelection(); return false;">← Back to login</a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div id="loading-spinner">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    // Require login for all product-related actions
+    function requireLogin(action) {
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          try {
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            const userData = userDoc.exists ? userDoc.data() : { role: 'customer' };
+
+            // Redirect based on role and action
+            if (userData.role === 'admin') {
+              window.location.href = '/admin/dashboard.html';
+            } else if (userData.role === 'manufacturer') {
+              window.location.href = '/manufacturer/dashboard.html';
+            } else if (userData.role === 'delivery') {
+              window.location.href = '/delivery/dashboard.html';
+            } else {
+              // Standard customer redirects
+              if (action === 'shop' || action === 'explore' || action === 'collections') {
+                window.location.href = '/customer/home.html';
+              } else if (action === 'cart') {
+                window.location.href = '/customer/cart.html';
+              } else if (action === 'orders') {
+                window.location.href = '/customer/orders.html';
+              } else if (action === 'profile') {
+                window.location.href = '/customer/profile.html';
+              }
+            }
+          } catch (error) {
+            console.error('Redirect error:', error);
+            openLoginModal();
+          }
+        } else {
+          // User not logged in, show login modal
+          openLoginModal();
+        }
+      });
+    }
+
+    // Profile dropdown toggle
+    function toggleProfileMenu(event) {
+      if (event) event.stopPropagation();
+      const menu = document.getElementById('profileMenu');
+      menu.classList.toggle('show');
+    }
+
+    // Close dropdown when clicking outside
+    window.addEventListener('click', function (event) {
+      const menu = document.getElementById('profileMenu');
+      if (menu && menu.classList.contains('show')) {
+        if (!event.target.closest('.navbar-profile-dropdown')) {
+          menu.classList.remove('show');
+        }
+      }
+    });
+
+    // Check if user is already logged in on page load
+    auth.onAuthStateChanged(async (user) => {
+      const profileMenu = document.getElementById('profileMenu');
+      if (user) {
+        try {
+          const userDoc = await db.collection('users').doc(user.uid).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            if (userData.status === 'active') {
+              // Update profile menu for logged in user
+              if (profileMenu) {
+                profileMenu.innerHTML = `
+                  <div style="padding: 10px 15px; border-bottom: 1px solid var(--color-light-gray); margin-bottom: 5px;">
+                    <div style="font-weight: 600; font-size: 0.9rem;">${userData.name}</div>
+                    <div style="font-size: 0.8rem; color: var(--color-text-light);">${userData.role}</div>
+                  </div>
+                  <a href="#" onclick="redirectToPortal('${userData.role}')">Dashboard</a>
+                  <a href="#" onclick="logout()">Logout</a>
+                `;
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Auth state check error:', error);
+        }
+      } else {
+        // Reset to default menu if logged out
+        if (profileMenu) {
+          profileMenu.innerHTML = `
+            <a href="#" onclick="requireLogin('profile'); return false;">Profile</a>
+            <a href="#" onclick="openLoginModal(); return false;">Login</a>
+          `;
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - STUDIO AKIRA</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .dashboard-welcome {
+            background: linear-gradient(135deg, var(--color-sage) 0%, var(--color-sage-dark) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dashboard-welcome h1 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--color-sage);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-sage-dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--color-text-light);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        .stat-change.positive {
+            color: var(--color-success);
+        }
+
+        .stat-change.negative {
+            color: var(--color-error);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .quick-action-btn {
+            padding: 20px;
+            background: white;
+            border: 2px solid var(--color-light-gray);
+            border-radius: var(--radius-md);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--color-text);
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--color-sage);
+            background: var(--color-sage-light);
+            transform: translateY(-2px);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-sage-darker);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">studio akira</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a href="dashboard.html" class="sidebar-link active">📊 Dashboard</a></li>
+            <li class="sidebar-item"><a href="products.html" class="sidebar-link">🕯️ Products</a></li>
+            <li class="sidebar-item"><a href="orders.html" class="sidebar-link">📦 Orders</a></li>
+            <li class="sidebar-item"><a href="users.html" class="sidebar-link">👥 Users</a></li>
+            <li class="sidebar-item"><a href="approvals.html" class="sidebar-link">✅ Approvals</a></li>
+            <li class="sidebar-item"><a href="financial.html" class="sidebar-link">💰 Financial</a></li>
+            <li class="sidebar-item"><a href="content.html" class="sidebar-link">📝 Content</a></li>
+            <li class="sidebar-item"><a href="#" class="sidebar-link" onclick="logout()">🚪 Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Welcome Section -->
+        <div class="dashboard-welcome">
+            <h1>Welcome Back, Admin! 👋</h1>
+            <p>Here's what's happening with your business today</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-value" id="totalOrders">0</div>
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-change positive" id="ordersChange">All time</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-value" id="totalRevenue">₹0</div>
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-change positive" id="revenueChange">All time</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-label">Total Customers</div>
+                <div class="stat-change positive" id="usersChange">Active users</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value" id="pendingApprovals">0</div>
+                <div class="stat-label">Pending Approvals</div>
+                <div class="stat-change" id="approvalsChange">Awaiting review</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🕯️</div>
+                <div class="stat-value" id="totalProducts">0</div>
+                <div class="stat-label">Active Products</div>
+                <div class="stat-change">In catalog</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🚚</div>
+                <div class="stat-value" id="pendingOrders">0</div>
+                <div class="stat-label">Pending Orders</div>
+                <div class="stat-change">Need attention</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-header">
+            <h2 class="section-title">Quick Actions</h2>
+        </div>
+        <div class="quick-actions">
+            <a href="products.html" class="quick-action-btn">
+                <div style="font-size: 2rem; margin-bottom: 10px;">➕</div>
+                <div>Add Product</div>
+            </a>
+            <a href="orders.html" class="quick-action-btn">
+                <div style="font-size: 2rem; margin-bottom: 10px;">📋</div>
+                <div>View Orders</div>
+            </a>
+            <a href="users.html" class="quick-action-btn">
+                <div style="font-size: 2rem; margin-bottom: 10px;">👤</div>
+                <div>Manage Users</div>
+            </a>
+            <a href="approvals.html" class="quick-action-btn">
+                <div style="font-size: 2rem; margin-bottom: 10px;">✅</div>
+                <div>Approvals</div>
+            </a>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="section-header">
+            <h2 class="section-title">Recent Orders</h2>
+            <a href="orders.html" class="btn btn-primary">View All</a>
+        </div>
+        <div class="table-container mb-lg">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="recentOrders">
+                    <tr>
+                        <td colspan="6" class="text-center">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pending Approval Requests -->
+        <div class="section-header">
+            <h2 class="section-title">Pending Approval Requests</h2>
+            <a href="approvals.html" class="btn btn-primary">View All</a>
+        </div>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Requested</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingRequests">
+                    <tr>
+                        <td colspan="5" class="text-center">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        // Check admin authentication
+        checkRole(['admin']).then(user => {
+            if (user) {
+                loadDashboardData();
+            }
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load total orders
+                const ordersSnapshot = await db.collection('orders').get();
+                document.getElementById('totalOrders').textContent = ordersSnapshot.size;
+
+                // Calculate total revenue
+                let totalRevenue = 0;
+                let pendingOrdersCount = 0;
+                ordersSnapshot.forEach(doc => {
+                    const order = doc.data();
+                    totalRevenue += order.totalAmount || 0;
+                    if (order.status === 'pending') pendingOrdersCount++;
+                });
+                document.getElementById('totalRevenue').textContent = formatPrice(totalRevenue);
+                document.getElementById('pendingOrders').textContent = pendingOrdersCount;
+
+                // Load total users (customers only)
+                const usersSnapshot = await db.collection('users').where('role', '==', 'customer').get();
+                document.getElementById('totalUsers').textContent = usersSnapshot.size;
+
+                // Load total products
+                const productsSnapshot = await db.collection('products').where('status', '==', 'active').get();
+                document.getElementById('totalProducts').textContent = productsSnapshot.size;
+
+                // Load pending approvals
+                const approvalsSnapshot = await db.collection('approvalRequests').where('status', '==', 'pending').get();
+                document.getElementById('pendingApprovals').textContent = approvalsSnapshot.size;
+
+                // Load recent orders
+                loadRecentOrders();
+
+                // Load pending requests
+                loadPendingRequests();
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('Error loading dashboard data', 'error');
+            }
+        }
+
+        async function loadRecentOrders() {
+            try {
+                const ordersSnapshot = await db.collection('orders')
+                    .orderBy('createdAt', 'desc')
+                    .limit(5)
+                    .get();
+
+                const tbody = document.getElementById('recentOrders');
+
+                if (ordersSnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No orders yet</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                ordersSnapshot.forEach(doc => {
+                    const order = doc.data();
+                    const orderId = doc.id.substring(0, 8).toUpperCase();
+                    html += `
+                    <tr>
+                        <td><strong>#${orderId}</strong></td>
+                        <td>${order.customerDetails?.name || 'N/A'}</td>
+                        <td><strong>${formatPrice(order.totalAmount)}</strong></td>
+                        <td>${getStatusBadge(order.status)}</td>
+                        <td>${formatDate(order.createdAt)}</td>
+                        <td><a href="orders.html?id=${doc.id}" class="btn btn-small btn-primary">View</a></td>
+                    </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading recent orders:', error);
+                document.getElementById('recentOrders').innerHTML = '<tr><td colspan="6" class="text-center">Error loading orders</td></tr>';
+            }
+        }
+
+        async function loadPendingRequests() {
+            try {
+                const requestsSnapshot = await db.collection('approvalRequests')
+                    .where('status', '==', 'pending')
+                    .orderBy('requestedAt', 'desc')
+                    .limit(5)
+                    .get();
+
+                const tbody = document.getElementById('pendingRequests');
+
+                if (requestsSnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No pending requests</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                requestsSnapshot.forEach(doc => {
+                    const request = doc.data();
+                    html += `
+                    <tr>
+                        <td><strong>${request.userName}</strong></td>
+                        <td>${request.userEmail}</td>
+                        <td><span class="badge badge-info">${request.requestedRole}</span></td>
+                        <td>${formatDate(request.requestedAt)}</td>
+                        <td>
+                            <button class="btn btn-small btn-success" onclick="approveRequest('${doc.id}', '${request.userId}')">Approve</button>
+                            <button class="btn btn-small btn-error" onclick="rejectRequest('${doc.id}', '${request.userId}')">Reject</button>
+                        </td>
+                    </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading pending requests:', error);
+                document.getElementById('pendingRequests').innerHTML = '<tr><td colspan="5" class="text-center">Error loading requests</td></tr>';
+            }
+        }
+
+        async function approveRequest(requestId, userId) {
+            if (!confirm('Approve this request?')) return;
+
+            try {
+                showLoading(true);
+                const currentUser = await getCurrentUser();
+
+                // Update approval request
+                await db.collection('approvalRequests').doc(requestId).update({
+                    status: 'approved',
+                    reviewedBy: currentUser.uid,
+                    reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Update user status
+                await db.collection('users').doc(userId).update({
+                    status: 'active',
+                    approvedBy: currentUser.uid,
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('Request approved successfully', 'success');
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error approving request:', error);
+                showToast('Error approving request', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function rejectRequest(requestId, userId) {
+            if (!confirm('Reject this request?')) return;
+
+            try {
+                showLoading(true);
+                const currentUser = await getCurrentUser();
+
+                // Update approval request
+                await db.collection('approvalRequests').doc(requestId).update({
+                    status: 'rejected',
+                    reviewedBy: currentUser.uid,
+                    reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Update user status
+                await db.collection('users').doc(userId).update({
+                    status: 'rejected'
+                });
+
+                showToast('Request rejected', 'success');
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                showToast('Error rejecting request', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+    </script>
+</body>
+
+</html>

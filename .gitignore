@@ -1,0 +1,48 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+.cache/
+
+# Python (for your dev server)
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Brain artifacts (agent working files)
+.gemini/

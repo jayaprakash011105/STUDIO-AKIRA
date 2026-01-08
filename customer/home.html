@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - studio akira</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+    <!-- Navigation - Updated Structure -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="home.html" class="navbar-logo">studio akira</a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="home.html" class="navbar-link">Home</a></li>
+                <li><a href="products.html" class="navbar-link">Collections</a></li>
+                <li><a href="../about.html" class="navbar-link">About</a></li>
+                <li><a href="../contact.html" class="navbar-link">Contact</a></li>
+                <li><a href="orders.html" class="navbar-link">Orders</a></li>
+            </ul>
+            <div class="navbar-right">
+                <a href="cart.html" class="navbar-icon" title="Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                </a>
+                <div class="navbar-profile-dropdown">
+                    <button class="navbar-icon" onclick="toggleProfileMenu(event)" title="Profile">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </button>
+                    <div class="profile-dropdown-menu" id="profileMenu">
+                        <a href="profile.html">Profile</a>
+                        <a href="#" onclick="logout(); return false;">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section - EXACT Reference Design from Image 3 -->
+    <section class="hero-main">
+        <div class="container">
+            <div class="hero-main-grid">
+                <!-- Left Content -->
+                <div class="hero-main-content">
+                    <h1 class="hero-main-title">studio<br>akira</h1>
+                    <p class="hero-main-tagline">Where light becomes ritual.</p>
+                    <p class="hero-main-description">Handcrafted luxury candles that transform your space into a
+                        sanctuary</p>
+                    <a href="products.html" class="btn btn-primary btn-pill btn-large">Explore Collections</a>
+                </div>
+
+                <!-- Right Product Image -->
+                <div class="hero-main-image">
+                    <img src="../assets/images/banners/Copilot_20260107_162550.png"
+                        alt="Studio Akira - Lavender & Sandal Botanical Composition">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products Section -->
+    <section class="section benefits-section">
+        <div class="container">
+            <p class="section-label">OUR COLLECTIONS</p>
+            <h2 class="section-title">Featured Products</h2>
+            <p class="section-description">
+                Discover our handcrafted candles made with 17 fully natural ingredients.
+                Each candle is carefully crafted to bring warmth and serenity to your space.
+            </p>
+
+            <div id="featured-products" class="benefits-grid">
+                <!-- Products will be loaded dynamically -->
+                <div class="text-center" style="grid-column: 1/-1;">Loading products...</div>
+            </div>
+
+            <div class="text-center mt-lg">
+                <a href="products.html" class="btn btn-primary btn-large">View All Products</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="featured-collection-section">
+        <div class="container">
+            <div class="featured-collection-grid">
+                <div class="featured-collection-content">
+                    <p class="section-label">WHY CHOOSE US</p>
+                    <h2 class="featured-collection-title">Natural Excellence</h2>
+                    <p class="featured-collection-text">
+                        Every candle is hand-poured with premium soy wax and natural essential oils.
+                        We believe in creating products that are not only beautiful but also safe for you and the
+                        environment.
+                    </p>
+                    <a href="products.html" class="btn btn-primary btn-large">Shop Now</a>
+                </div>
+                <div class="featured-collection-image">
+                    <img src="../assets/images/banners/hero.png" alt="Natural Candles">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Grid -->
+    <section class="section" style="background-color: white;">
+        <div class="container">
+            <p class="section-label">WHAT WE OFFER</p>
+            <h2 class="section-title">What are the benefits?</h2>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-image">
+                        <img src="../assets/images/products/lavender-candle.png" alt="Natural Ingredients">
+                    </div>
+                    <h3 class="benefit-title">100% Natural</h3>
+                    <p class="benefit-text">Made with pure soy wax and natural essential oils, free from harmful
+                        chemicals.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-image">
+                        <img src="../assets/images/products/cinnamon-candle.png" alt="Hand Poured">
+                    </div>
+                    <h3 class="benefit-title">Hand-Poured</h3>
+                    <p class="benefit-text">Each candle is carefully hand-poured with attention to detail and love.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-image">
+                        <img src="../assets/images/banners/ambiance.png" alt="Eco Friendly">
+                    </div>
+                    <h3 class="benefit-title">Eco-Friendly</h3>
+                    <p class="benefit-text">Sustainable ingredients and recyclable packaging for a better tomorrow.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-image">
+                        <img src="../assets/images/banners/ambiance.png" alt="Long Lasting">
+                    </div>
+                    <h3 class="benefit-title">Long Lasting</h3>
+                    <p class="benefit-text">Premium quality ensures a clean, even burn for up to 50 hours.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3 class="footer-logo">studio akira</h3>
+                    <p>Handcrafted natural candles made with love and care.</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Information</h4>
+                    <ul class="footer-links">
+                        <li><a href="../about.html">About Us</a></li>
+                        <li><a href="../contact.html">Contact</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul class="footer-links">
+                        <li><a href="products.html">All Products</a></li>
+                        <li><a href="products.html">Collections</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Account</h4>
+                    <ul class="footer-links">
+                        <li><a href="profile.html">My Profile</a></li>
+                        <li><a href="orders.html">My Orders</a></li>
+                        <li><a href="cart.html">Shopping Cart</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Studio Akira. Natural Handcrafted Candles. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/customer.js"></script>
+
+    <script>
+        // Check authentication
+        checkRole(['customer']).then(user => {
+            if (user) {
+                loadFeaturedProducts();
+            }
+        });
+
+        async function loadFeaturedProducts() {
+            try {
+                const snapshot = await db.collection('products')
+                    .where('status', '==', 'active')
+                    .limit(4)
+                    .get();
+
+                const container = document.getElementById('featured-products');
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p>No products available yet. Check back soon!</p></div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const product = doc.data();
+                    const imageUrl = product.images && product.images[0] ? `../${product.images[0]}` : '../assets/images/products/lavender-candle.png';
+
+                    container.innerHTML += `
+            <div class="benefit-card" onclick="viewProduct('${doc.id}')" style="cursor: pointer;">
+              <div class="benefit-image">
+                <img src="${imageUrl}" alt="${product.name}">
+              </div>
+              <h3 class="benefit-title">${product.name}</h3>
+              <p class="benefit-text">${product.description || ''}</p>
+              <div style="margin-top: 15px; font-size: 1.2rem; font-weight: 600; color: var(--color-primary);">
+                ${formatPrice(product.price)}
+              </div>
+              <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="event.stopPropagation(); addToCartFromHome('${doc.id}', '${product.name}')">Add to Cart</button>
+            </div>
+          `;
+                });
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('featured-products').innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p>Unable to load products. Please refresh the page.</p></div>';
+            }
+        }
+
+        function viewProduct(productId) {
+            window.location.href = `product-detail.html?id=${productId}`;
+        }
+
+        function addToCartFromHome(productId, name) {
+            addToCart(productId);
+            showToast(`${name} added to cart!`, 'success');
+        }
+
+        // Profile dropdown toggle
+        function toggleProfileMenu(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function (event) {
+            const menu = document.getElementById('profileMenu');
+            if (menu && menu.classList.contains('show')) {
+                if (!event.target.closest('.navbar-profile-dropdown')) {
+                    menu.classList.remove('show');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

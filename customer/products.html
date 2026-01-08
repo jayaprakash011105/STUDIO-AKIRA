@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - studio akira</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .products-header {
+            background: linear-gradient(135deg, var(--color-sage-light) 0%, var(--color-cream) 100%);
+            padding: 60px 0 40px;
+            margin-top: 70px;
+        }
+
+        .products-filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 12px 28px;
+            background-color: white;
+            border: 2px solid var(--color-light-gray);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--color-sage) 0%, var(--color-sage-dark) 100%);
+            color: white;
+            border-color: var(--color-sage);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 35px;
+            margin-bottom: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation - Updated Structure -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="home.html" class="navbar-logo">studio akira</a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="home.html" class="navbar-link">Home</a></li>
+                <li><a href="products.html" class="navbar-link">Collections</a></li>
+                <li><a href="../about.html" class="navbar-link">About</a></li>
+                <li><a href="../contact.html" class="navbar-link">Contact</a></li>
+                <li><a href="orders.html" class="navbar-link">Orders</a></li>
+            </ul>
+            <div class="navbar-right">
+                <a href="cart.html" class="navbar-icon" title="Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                </a>
+                <div class="navbar-profile-dropdown">
+                    <button class="navbar-icon" onclick="toggleProfileMenu(event)" title="Profile">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </button>
+                    <div class="profile-dropdown-menu" id="profileMenu">
+                        <a href="profile.html">Profile</a>
+                        <a href="#" onclick="logout(); return false;">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Products Header -->
+    <section class="products-header">
+        <div class="container">
+            <h1 style="text-align: center; font-size: 3rem; color: var(--color-sage-darker); margin-bottom: 15px;">Our
+                Collection</h1>
+            <p style="text-align: center; color: var(--color-text-light); font-size: 1.1rem;">Discover our handcrafted
+                natural candles</p>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="section" style="background-color: white;">
+        <div class="container">
+            <!-- Products Filter -->
+            <div class="products-filter">
+                <button class="filter-btn active" onclick="filterProducts('all')">All Products</button>
+                <button class="filter-btn" onclick="filterProducts('signature')">Signature Candles</button>
+                <button class="filter-btn" onclick="filterProducts('ritual')">Ritual / Spiritual Candles</button>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="products-grid" class="products-grid">
+                <div class="text-center" style="grid-column: 1/-1;">Loading products...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Luxury Gift Boxes Section -->
+    <section class="section" style="background-color: var(--color-background);">
+        <div class="container">
+            <p class="section-label">LUXURY GIFTS</p>
+            <h2 class="section-title">Luxury Gift Boxes</h2>
+            <p class="section-description">
+                Beautifully curated gift sets perfect for any occasion. Each box is thoughtfully designed to create a
+                memorable gifting experience.
+            </p>
+
+            <!-- Gift Boxes Grid -->
+            <div id="gift-boxes-grid" class="products-grid">
+                <div class="text-center" style="grid-column: 1/-1;">Loading gift boxes...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/customer.js"></script>
+
+    <script>
+        let currentFilter = 'all';
+
+        // Check authentication
+        checkRole(['customer']).then(user => {
+            if (user) {
+                loadProducts();
+                loadGiftBoxes();
+                updateCartCount();
+            }
+        });
+
+        async function loadProducts() {
+            try {
+                let query = db.collection('products').where('status', '==', 'active');
+
+                if (currentFilter !== 'all') {
+                    query = query.where('category', '==', currentFilter);
+                }
+
+                const snapshot = await query.get();
+                const container = document.getElementById('products-grid');
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-state-icon">🕯️</div><h3 class="empty-state-title">No products found</h3><p class="empty-state-text">Try selecting a different category</p></div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const product = doc.data();
+                    const imageUrl = product.images && product.images[0] ? `../${product.images[0]}` : '../assets/images/products/lavender-candle.png';
+
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+            <img src="${imageUrl}" alt="${product.name}" class="product-card-image">
+            <div class="product-card-body">
+              <h3 class="product-card-title">${product.name}</h3>
+              <p class="product-card-description">${product.description || 'Handcrafted natural candle'}</p>
+              <div class="product-card-price">${formatPrice(product.price)}</div>
+              <div class="product-card-footer">
+                <button class="btn btn-primary" style="flex: 1;" onclick="addToCartFromProducts('${doc.id}', '${product.name}')">Add to Cart</button>
+              </div>
+            </div>
+          `;
+                    card.onclick = (e) => {
+                        if (!e.target.closest('button')) {
+                            window.location.href = `product-detail.html?id=${doc.id}`;
+                        }
+                    };
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('products-grid').innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p>Unable to load products. Please refresh the page.</p></div>';
+            }
+        }
+
+        function filterProducts(category) {
+            currentFilter = category;
+
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            loadProducts();
+        }
+
+        function addToCartFromProducts(productId, name) {
+            addToCart(productId);
+            showToast(`${name} added to cart!`, 'success');
+            updateCartCount();
+        }
+
+        // Load gift boxes separately
+        async function loadGiftBoxes() {
+            try {
+                const snapshot = await db.collection('products')
+                    .where('status', '==', 'active')
+                    .where('category', '==', 'luxury')
+                    .get();
+
+                const container = document.getElementById('gift-boxes-grid');
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-state-icon">🎁</div><h3 class="empty-state-title">No gift boxes available</h3><p class="empty-state-text">Check back soon for our luxury gift collections</p></div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const product = doc.data();
+                    const imageUrl = product.images && product.images[0] ? `../${product.images[0]}` : '../assets/images/products/lavender-candle.png';
+
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+            <img src="${imageUrl}" alt="${product.name}" class="product-card-image">
+            <div class="product-card-body">
+              <h3 class="product-card-title">${product.name}</h3>
+              <p class="product-card-description">${product.description || 'Luxury gift box'}</p>
+              <div class="product-card-price">${formatPrice(product.price)}</div>
+              <div class="product-card-footer">
+                <button class="btn btn-primary" style="flex: 1;" onclick="addToCartFromProducts('${doc.id}', '${product.name}')">Add to Cart</button>
+              </div>
+            </div>
+          `;
+                    card.onclick = (e) => {
+                        if (!e.target.closest('button')) {
+                            window.location.href = `product-detail.html?id=${doc.id}`;
+                        }
+                    };
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading gift boxes:', error);
+                document.getElementById('gift-boxes-grid').innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p>Unable to load gift boxes.</p></div>';
+            }
+        }
+
+        // Profile dropdown toggle
+        function toggleProfileMenu(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function (event) {
+            const menu = document.getElementById('profileMenu');
+            if (menu && menu.classList.contains('show')) {
+                if (!event.target.closest('.navbar-profile-dropdown')) {
+                    menu.classList.remove('show');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

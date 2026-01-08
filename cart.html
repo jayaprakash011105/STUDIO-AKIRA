@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - STUDIO AKIRA</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .cart-container {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 40px 20px;
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 100px 1fr auto auto auto;
+            gap: 20px;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--color-light-gray);
+        }
+
+        .cart-item-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-item-quantity button {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--color-gray);
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .cart-item-quantity input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid var(--color-light-gray);
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            color: var(--color-error);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .cart-summary {
+            background: var(--color-cream);
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-logo">studio akira</a>
+            <ul class="navbar-menu">
+                <li><a href="index.html" class="navbar-link">Home</a></li>
+                <li><a href="products.html" class="navbar-link">Shop</a></li>
+                <li><a href="cart.html" class="navbar-link">🛒 Cart <span class="cart-count"
+                            style="display:none;">0</span></a></li>
+                <li><button class="btn btn-primary btn-small" onclick="openLoginModal()">Login</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Cart Content -->
+    <div class="cart-container">
+        <h1 class="mb-lg">Shopping Cart</h1>
+
+        <div id="cart-items">
+            <!-- Cart items will be loaded here -->
+        </div>
+
+        <div class="cart-summary">
+            <div class="flex justify-between mb-md">
+                <h3>Subtotal:</h3>
+                <h3 id="cart-total">₹0</h3>
+            </div>
+            <button class="btn btn-primary btn-large" style="width: 100%;" onclick="proceedToCheckout()">Proceed to
+                Checkout</button>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+            <div class="modal-header">
+                <h2 class="modal-title">Login Required</h2>
+            </div>
+            <div class="modal-body">
+                <p class="mb-md">Please login to proceed with checkout</p>
+                <!-- Role Selection -->
+                <div id="roleSelection">
+                    <p class="text-center mb-md">Select your role to continue</p>
+                    <div class="grid grid-2 gap-md">
+                        <button class="btn btn-primary" onclick="selectRole('customer')">Customer</button>
+                        <button class="btn btn-secondary" onclick="selectRole('admin')">Admin</button>
+                    </div>
+                    <div class="text-center mt-md">
+                        <p style="margin-bottom: var(--spacing-sm); color: var(--color-gray);">First time here?</p>
+                        <button class="btn btn-outline-primary" style="width: 100%;" onclick="showSignupForm()">Create
+                            New Account</button>
+                    </div>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="hidden">
+                    <input type="hidden" id="selectedRole">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="loginEmail" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="loginPassword" class="form-input" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                    <p class="text-center mt-md">
+                        <a href="#" onclick="showSignupForm(); return false;"
+                            style="display: block; margin-bottom: var(--spacing-sm);">New User? Create Account</a>
+                        <a href="#" onclick="showRoleSelection(); return false;"
+                            style="font-size: 0.9em; color: var(--color-gray);">← Back to role selection</a>
+                    </p>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signupForm" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="signupName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="signupEmail" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" id="signupPhone" class="form-input" placeholder="10-digit mobile number"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="signupPassword" class="form-input" minlength="6" required>
+                    </div>
+                    <input type="hidden" id="signupRole" value="customer">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
+                    <p class="text-center mt-md">
+                        <a href="#" onclick="showRoleSelection(); return false;">← Back to login</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/customer.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCartItems();
+            updateCartCount();
+        });
+
+        function proceedToCheckout() {
+            const cart = getCart();
+            if (cart.length === 0) {
+                showToast('Your cart is empty', 'warning');
+                return;
+            }
+
+            // Check if user is logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    window.location.href = 'checkout.html';
+                } else {
+                    openLoginModal();
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

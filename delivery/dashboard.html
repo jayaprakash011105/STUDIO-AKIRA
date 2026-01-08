@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Dashboard - STUDIO AKIRA</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">studio akira</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a href="dashboard.html" class="sidebar-link active">Dashboard</a></li>
+            <li class="sidebar-item"><a href="orders.html" class="sidebar-link">My Deliveries</a></li>
+            <li class="sidebar-item"><a href="tracking.html" class="sidebar-link">Update Tracking</a></li>
+            <li class="sidebar-item"><a href="#" class="sidebar-link" onclick="logout()">Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1>Delivery Partner Dashboard</h1>
+        <p class="mb-lg">Manage your assigned deliveries</p>
+
+        <!-- Dashboard Stats -->
+        <div class="grid grid-3 gap-md mb-lg">
+            <div class="dashboard-card">
+                <div class="dashboard-card-title">Pending Deliveries</div>
+                <div class="dashboard-card-value" id="pendingDeliveries">0</div>
+                <div class="dashboard-card-subtitle">Awaiting pickup</div>
+            </div>
+            <div class="dashboard-card"
+                style="background: linear-gradient(135deg, var(--color-info), var(--color-primary));">
+                <div class="dashboard-card-title">In Transit</div>
+                <div class="dashboard-card-value" id="inTransit">0</div>
+                <div class="dashboard-card-subtitle">Out for delivery</div>
+            </div>
+            <div class="dashboard-card"
+                style="background: linear-gradient(135deg, var(--color-success), var(--color-sage));">
+                <div class="dashboard-card-title">Completed</div>
+                <div class="dashboard-card-value" id="completed">0</div>
+                <div class="dashboard-card-subtitle">Delivered</div>
+            </div>
+        </div>
+
+        <!-- Assigned Orders -->
+        <div class="table-container">
+            <h2 class="p-md" style="margin: 0; border-bottom: 1px solid var(--color-light-gray);">Assigned Deliveries
+            </h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer Name</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="assignedOrders">
+                    <tr>
+                        <td colspan="7" class="text-center">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Update Tracking Modal -->
+    <div id="trackingModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeTrackingModal()">&times;</button>
+            <div class="modal-header">
+                <h2 class="modal-title">Update Delivery Status</h2>
+            </div>
+            <div class="modal-body">
+                <form id="trackingForm">
+                    <input type="hidden" id="orderId">
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="trackingStatus" class="form-select" required>
+                            <option value="packaged">Packaged & Ready</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="out_for_delivery">Out for Delivery</option>
+                            <option value="delivered">Delivered</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location (Optional)</label>
+                        <input type="text" id="trackingLocation" class="form-input"
+                            placeholder="e.g., Mumbai Warehouse">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea id="trackingNotes" class="form-textarea"
+                            placeholder="Add any additional notes"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Update Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        let currentUser;
+
+        // Check delivery partner authentication
+        checkRole(['delivery']).then(user => {
+            if (user) {
+                currentUser = user;
+                loadDashboardData();
+            }
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load assigned orders
+                const assignedSnapshot = await db.collection('orders')
+                    .where('assignedToDelivery', '==', currentUser.uid)
+                    .get();
+
+                let pending = 0, inTransit = 0, completed = 0;
+
+                assignedSnapshot.forEach(doc => {
+                    const order = doc.data();
+                    if (order.status === 'packaged' || order.status === 'shipped') pending++;
+                    else if (order.status === 'out_for_delivery') inTransit++;
+                    else if (order.status === 'delivered') completed++;
+                });
+
+                document.getElementById('pendingDeliveries').textContent = pending;
+                document.getElementById('inTransit').textContent = inTransit;
+                document.getElementById('completed').textContent = completed;
+
+                loadAssignedOrders();
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('Error loading dashboard data', 'error');
+            }
+        }
+
+        async function loadAssignedOrders() {
+            const ordersSnapshot = await db.collection('orders')
+                .where('assignedToDelivery', '==', currentUser.uid)
+                .where('status', '!=', 'delivered')
+                .orderBy('status')
+                .orderBy('createdAt', 'desc')
+                .get();
+
+            const tbody = document.getElementById('assignedOrders');
+
+            if (ordersSnapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No assigned deliveries</td></tr>';
+                return;
+            }
+
+            let html = '';
+            ordersSnapshot.forEach(doc => {
+                const order = doc.data();
+                html += `
+          <tr>
+            <td>${doc.id}</td>
+            <td>${order.customerDetails?.name || 'N/A'}</td>
+            <td>${order.customerDetails?.phone || 'N/A'}</td>
+            <td>${order.customerDetails?.address || 'N/A'}</td>
+            <td>${formatPrice(order.totalAmount)}</td>
+            <td>${getStatusBadge(order.status)}</td>
+            <td>
+              <button class="btn btn-small btn-primary" onclick="openTrackingModal('${doc.id}')">Update</button>
+            </td>
+          </tr>
+        `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function openTrackingModal(orderId) {
+            document.getElementById('orderId').value = orderId;
+            document.getElementById('trackingModal').classList.add('active');
+        }
+
+        function closeTrackingModal() {
+            document.getElementById('trackingModal').classList.remove('active');
+            document.getElementById('trackingForm').reset();
+        }
+
+        document.getElementById('trackingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const orderId = document.getElementById('orderId').value;
+            const status = document.getElementById('trackingStatus').value;
+            const location = document.getElementById('trackingLocation').value;
+            const notes = document.getElementById('trackingNotes').value;
+
+            try {
+                showLoading(true);
+
+                // Get current order
+                const orderDoc = await db.collection('orders').doc(orderId).get();
+                const order = orderDoc.data();
+
+                // Add tracking update
+                const trackingUpdates = order.trackingUpdates || [];
+                trackingUpdates.push({
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: status,
+                    location: location,
+                    notes: notes
+                });
+
+                // Update order
+                await db.collection('orders').doc(orderId).update({
+                    status: status,
+                    trackingUpdates: trackingUpdates,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('Tracking updated successfully', 'success');
+                closeTrackingModal();
+                loadDashboardData();
+
+            } catch (error) {
+                console.error('Error updating tracking:', error);
+                showToast('Error updating tracking', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+    </script>
+</body>
+
+</html>

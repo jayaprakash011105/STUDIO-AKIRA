@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - STUDIO AKIRA</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .checkout-container {
+            max-width: 1200px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+        }
+
+        .checkout-section {
+            background: white;
+            padding: 30px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+        }
+
+        .order-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--color-light-gray);
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border: 2px solid var(--color-light-gray);
+            border-radius: var(--radius-md);
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            border-color: var(--color-primary);
+            background-color: var(--color-cream);
+        }
+
+        .payment-method input[type="radio"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 968px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-logo">studio akira</a>
+            <ul class="navbar-menu">
+                <li><a href="index.html" class="navbar-link">Home</a></li>
+                <li><a href="products.html" class="navbar-link">Shop</a></li>
+                <li><a href="cart.html" class="navbar-link">🛒 Cart</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Checkout Content -->
+    <div class="checkout-container">
+        <h1 class="mb-lg">Checkout</h1>
+
+        <div class="checkout-grid">
+            <!-- Left Column - Forms -->
+            <div>
+                <!-- Customer Details -->
+                <div class="checkout-section">
+                    <h2 class="mb-md">Delivery Information</h2>
+                    <form id="checkoutForm">
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" id="customerName" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email *</label>
+                            <input type="email" id="customerEmail" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" id="customerPhone" class="form-input" placeholder="10-digit mobile number"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Delivery Address *</label>
+                            <textarea id="customerAddress" class="form-textarea" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="checkout-section">
+                    <h2 class="mb-md">Payment Method</h2>
+
+                    <label class="payment-method">
+                        <input type="radio" name="paymentMethod" value="cod" checked>
+                        <div>
+                            <strong>Cash on Delivery (COD)</strong>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--color-gray);">Pay when you receive your
+                                order</p>
+                        </div>
+                    </label>
+
+                    <label class="payment-method">
+                        <input type="radio" name="paymentMethod" value="card">
+                        <div>
+                            <strong>Credit / Debit Card</strong>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--color-gray);">Visa, Mastercard, Rupay
+                            </p>
+                        </div>
+                    </label>
+
+                    <label class="payment-method">
+                        <input type="radio" name="paymentMethod" value="online">
+                        <div>
+                            <strong>Online Payment</strong>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--color-gray);">UPI, Net Banking, Wallets
+                            </p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Right Column - Order Summary -->
+            <div>
+                <div class="checkout-section">
+                    <h2 class="mb-md">Order Summary</h2>
+
+                    <div id="order-items">
+                        <!-- Order items will be loaded here -->
+                    </div>
+
+                    <div class="order-summary-item" style="font-weight: 600; font-size: 1.2rem;">
+                        <span>Total</span>
+                        <span id="order-total">₹0</span>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" style="width: 100%; margin-top: 20px;"
+                        onclick="placeOrderFromCheckout()">Place Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/customer.js"></script>
+
+    <script>
+        let currentUser;
+
+        // Check if user is logged in
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                showToast('Please login to checkout', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+                return;
+            }
+
+            currentUser = user;
+
+            // Load user details
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                document.getElementById('customerName').value = userData.name || '';
+                document.getElementById('customerEmail').value = userData.email || '';
+                document.getElementById('customerPhone').value = userData.phone || '';
+            }
+
+            loadOrderSummary();
+        });
+
+        function loadOrderSummary() {
+            const cart = getCart();
+            const container = document.getElementById('order-items');
+
+            if (cart.length === 0) {
+                showToast('Your cart is empty', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'cart.html';
+                }, 1500);
+                return;
+            }
+
+            let total = 0;
+            let html = '';
+
+            cart.forEach(async (item) => {
+                const productDoc = await db.collection('products').doc(item.productId).get();
+                if (productDoc.exists) {
+                    const product = productDoc.data();
+                    const itemTotal = product.price * item.quantity;
+                    total += itemTotal;
+
+                    html += `
+            <div class="order-summary-item">
+              <div>
+                <strong>${product.name}</strong>
+                <p style="margin: 0; font-size: 0.9rem; color: var(--color-gray);">Qty: ${item.quantity}</p>
+              </div>
+              <span>${formatPrice(itemTotal)}</span>
+            </div>
+          `;
+
+                    container.innerHTML = html;
+                    document.getElementById('order-total').textContent = formatPrice(total);
+                }
+            });
+        }
+
+        async function placeOrderFromCheckout() {
+            const name = document.getElementById('customerName').value;
+            const email = document.getElementById('customerEmail').value;
+            const phone = document.getElementById('customerPhone').value;
+            const address = document.getElementById('customerAddress').value;
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+            if (!name || !email || !phone || !address) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (!isValidPhone(phone)) {
+                showToast('Please enter a valid 10-digit mobile number', 'error');
+                return;
+            }
+
+            const orderData = {
+                name,
+                email,
+                phone,
+                address,
+                paymentMethod
+            };
+
+            await placeOrder(orderData);
+        }
+    </script>
+</body>
+
+</html>

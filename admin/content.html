@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Management - STUDIO AKIRA Admin</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .content-header {
+            margin-bottom: 30px;
+        }
+
+        .content-sections {
+            display: grid;
+            gap: 30px;
+        }
+
+        .content-card {
+            background: white;
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .content-card h2 {
+            color: var(--color-sage-darker);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--color-sage-light);
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .banner-preview {
+            width: 100%;
+            max-width: 400px;
+            height: 200px;
+            background: var(--color-background);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 15px;
+            border: 2px dashed var(--color-light-gray);
+        }
+
+        .banner-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: var(--radius-md);
+        }
+
+        .info-box {
+            background: var(--color-sage-light);
+            padding: 15px;
+            border-radius: var(--radius-md);
+            margin-top: 15px;
+            border-left: 4px solid var(--color-sage);
+        }
+
+        .info-box p {
+            margin: 0;
+            color: var(--color-sage-darker);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">studio akira</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a href="dashboard.html" class="sidebar-link">📊 Dashboard</a></li>
+            <li class="sidebar-item"><a href="products.html" class="sidebar-link">🕯️ Products</a></li>
+            <li class="sidebar-item"><a href="orders.html" class="sidebar-link">📦 Orders</a></li>
+            <li class="sidebar-item"><a href="users.html" class="sidebar-link">👥 Users</a></li>
+            <li class="sidebar-item"><a href="approvals.html" class="sidebar-link">✅ Approvals</a></li>
+            <li class="sidebar-item"><a href="financial.html" class="sidebar-link">💰 Financial</a></li>
+            <li class="sidebar-item"><a href="content.html" class="sidebar-link active">📝 Content</a></li>
+            <li class="sidebar-item"><a href="#" class="sidebar-link" onclick="logout()">🚪 Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header">
+            <h1>Content Management</h1>
+            <p style="color: var(--color-text-light);">Manage website content, banners, and collections</p>
+        </div>
+
+        <div class="content-sections">
+            <!-- Homepage Hero Section -->
+            <div class="content-card">
+                <h2>🏠 Homepage Hero Section</h2>
+                <form onsubmit="saveHeroContent(event)">
+                    <div class="form-section">
+                        <label class="form-label">Hero Title</label>
+                        <input type="text" class="form-input" id="heroTitle" placeholder="studio akira"
+                            value="studio akira">
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Hero Tagline</label>
+                        <input type="text" class="form-input" id="heroTagline" placeholder="Where light becomes ritual."
+                            value="Where light becomes ritual.">
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Hero Description</label>
+                        <textarea class="form-input" id="heroDescription" rows="3"
+                            placeholder="Handcrafted luxury candles...">Handcrafted luxury candles that transform your space into a sanctuary</textarea>
+                    </div>
+
+                    <div class="info-box">
+                        <p>💡 <strong>Note:</strong> Hero banner image is located at
+                            <code>assets/images/banners/</code>. To change the image, replace the file in that
+                            directory.</p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Save Hero Content</button>
+                </form>
+            </div>
+
+            <!-- Featured Products Section -->
+            <div class="content-card">
+                <h2>⭐ Featured Products</h2>
+                <div class="info-box">
+                    <p>📌 Featured products are automatically displayed from your active product catalog. The homepage
+                        shows the 4 most recent active products.</p>
+                    <p style="margin-top: 10px;">To change featured products, go to <a href="products.html"
+                            style="color: var(--color-sage-dark); font-weight: 600;">Product Management</a> and ensure
+                        your desired products are marked as "Active".</p>
+                </div>
+            </div>
+
+            <!-- Collections Management -->
+            <div class="content-card">
+                <h2>📚 Collections</h2>
+                <div class="info-box">
+                    <p>📦 <strong>Current Collections:</strong></p>
+                    <ul style="margin: 10px 0 0 20px; color: var(--color-sage-darker);">
+                        <li>Signature Candles</li>
+                        <li>Ritual / Spiritual Candles</li>
+                        <li>Luxury Gift Boxes</li>
+                    </ul>
+                    <p style="margin-top: 10px;">Collections are managed through product categories. To add products to
+                        a collection, edit the product's category in <a href="products.html"
+                            style="color: var(--color-sage-dark); font-weight: 600;">Product Management</a>.</p>
+                </div>
+            </div>
+
+            <!-- About & Contact Pages -->
+            <div class="content-card">
+                <h2>📄 Static Pages</h2>
+                <div class="form-section">
+                    <label class="form-label">About Us Page Status</label>
+                    <div style="padding: 15px; background: var(--color-background); border-radius: var(--radius-md);">
+                        <p style="margin: 0; color: var(--color-success); font-weight: 600;">✅ Active</p>
+                        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--color-text-light);">Located at:
+                            <code>about.html</code></p>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">Contact Page Status</label>
+                    <div style="padding: 15px; background: var(--color-background); border-radius: var(--radius-md);">
+                        <p style="margin: 0; color: var(--color-success); font-weight: 600;">✅ Active</p>
+                        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--color-text-light);">Located at:
+                            <code>contact.html</code></p>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <p>💡 To edit About or Contact page content, modify the respective HTML files directly in the
+                        project root directory.</p>
+                </div>
+            </div>
+
+            <!-- SEO Settings -->
+            <div class="content-card">
+                <h2>🔍 SEO Settings</h2>
+                <form onsubmit="saveSEOSettings(event)">
+                    <div class="form-section">
+                        <label class="form-label">Site Title</label>
+                        <input type="text" class="form-input" id="siteTitle"
+                            placeholder="STUDIO AKIRA - Natural Handcrafted Candles"
+                            value="STUDIO AKIRA - Natural Handcrafted Candles">
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Meta Description</label>
+                        <textarea class="form-input" id="metaDescription" rows="3"
+                            placeholder="Discover premium handcrafted candles...">Discover premium handcrafted candles made with 100% natural soy wax and essential oils. Transform your space with our luxury candle collection.</textarea>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Keywords</label>
+                        <input type="text" class="form-input" id="seoKeywords"
+                            placeholder="candles, natural candles, soy candles..."
+                            value="candles, natural candles, soy candles, handcrafted candles, luxury candles">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Save SEO Settings</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        checkRole(['admin']).then(user => {
+            if (user) loadContentData();
+        });
+
+        async function loadContentData() {
+            try {
+                // Load existing content from Firestore if available
+                const contentDoc = await db.collection('websiteContent').doc('homepage').get();
+
+                if (contentDoc.exists) {
+                    const data = contentDoc.data();
+                    if (data.heroTitle) document.getElementById('heroTitle').value = data.heroTitle;
+                    if (data.heroTagline) document.getElementById('heroTagline').value = data.heroTagline;
+                    if (data.heroDescription) document.getElementById('heroDescription').value = data.heroDescription;
+                }
+
+                const seoDoc = await db.collection('websiteContent').doc('seo').get();
+                if (seoDoc.exists) {
+                    const data = seoDoc.data();
+                    if (data.siteTitle) document.getElementById('siteTitle').value = data.siteTitle;
+                    if (data.metaDescription) document.getElementById('metaDescription').value = data.metaDescription;
+                    if (data.keywords) document.getElementById('seoKeywords').value = data.keywords;
+                }
+            } catch (error) {
+                console.error('Error loading content:', error);
+            }
+        }
+
+        async function saveHeroContent(event) {
+            event.preventDefault();
+
+            const heroData = {
+                heroTitle: document.getElementById('heroTitle').value,
+                heroTagline: document.getElementById('heroTagline').value,
+                heroDescription: document.getElementById('heroDescription').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                showLoading(true);
+                await db.collection('websiteContent').doc('homepage').set(heroData, { merge: true });
+                showToast('Hero content saved successfully', 'success');
+            } catch (error) {
+                console.error('Error saving hero content:', error);
+                showToast('Error saving content', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function saveSEOSettings(event) {
+            event.preventDefault();
+
+            const seoData = {
+                siteTitle: document.getElementById('siteTitle').value,
+                metaDescription: document.getElementById('metaDescription').value,
+                keywords: document.getElementById('seoKeywords').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                showLoading(true);
+                await db.collection('websiteContent').doc('seo').set(seoData, { merge: true });
+                showToast('SEO settings saved successfully', 'success');
+            } catch (error) {
+                console.error('Error saving SEO settings:', error);
+                showToast('Error saving SEO settings', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+    </script>
+</body>
+
+</html>

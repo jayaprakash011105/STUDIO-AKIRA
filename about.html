@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - studio akira</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .about-header {
+            background: linear-gradient(135deg, var(--color-sage-light) 0%, var(--color-cream) 100%);
+            padding: 80px 0 60px;
+            margin-top: 70px;
+            text-align: center;
+        }
+
+        .story-section {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .story-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .story-image img {
+            width: 100%;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .values-section {
+            padding: 80px 0;
+            background: var(--color-background);
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .value-card {
+            background: white;
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+
+        .value-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .value-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--color-sage);
+        }
+
+        @media (max-width: 768px) {
+            .story-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation - Updated Structure -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="index.html" class="navbar-logo">studio akira</a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="index.html" class="navbar-link">Home</a></li>
+                <li><a href="#" onclick="requireLogin('collections'); return false;" class="navbar-link">Collections</a>
+                </li>
+                <li><a href="about.html" class="navbar-link">About</a></li>
+                <li><a href="contact.html" class="navbar-link">Contact</a></li>
+                <li><a href="#" onclick="requireLogin('orders'); return false;" class="navbar-link">Orders</a></li>
+            </ul>
+            <div class="navbar-right">
+                <a href="#" onclick="requireLogin('cart'); return false;" class="navbar-icon" title="Cart">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                </a>
+                <div class="navbar-profile-dropdown">
+                    <button class="navbar-icon" onclick="toggleProfileMenu(event)" title="Profile">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </button>
+                    <div class="profile-dropdown-menu" id="profileMenu">
+                        <a href="#" onclick="requireLogin('profile'); return false;">Profile</a>
+                        <a href="#" onclick="openLoginModal(); return false;">Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- About Header -->
+    <section class="about-header">
+        <div class="container">
+            <h1 style="font-size: 3.5rem; color: var(--color-sage-darker); margin-bottom: 20px;">Our Story</h1>
+            <p style="font-size: 1.2rem; color: var(--color-text-light); max-width: 600px; margin: 0 auto;">
+                Crafting light, warmth, and serenity for your sanctuary.
+            </p>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="story-section">
+        <div class="container">
+            <div class="story-grid">
+                <div class="story-content">
+                    <p class="section-label">WHO WE ARE</p>
+                    <h2 class="section-title" style="text-align: left;">The Art of Slow Living</h2>
+                    <p style="margin-bottom: 20px; line-height: 1.8;">
+                        Studio Akira began with a simple belief: that the objects we surround ourselves with effectively
+                        shape our daily rituals. What started as a small passion project has grown into a dedicated
+                        atelier crafting premium, sustainable candles.
+                    </p>
+                    <p style="margin-bottom: 20px; line-height: 1.8;">
+                        Our candles are more than just wax and wick. They are designed to be an experience—a visual and
+                        olfactory journey that helps you reconnect with yourself and your space.
+                    </p>
+                    <p style="line-height: 1.8;">
+                        We use only 100% natural soy wax, lead-free cotton wicks, and premium essential oils to ensure a
+                        clean, long-lasting burn that is safe for you and the environment.
+                    </p>
+                </div>
+                <div class="story-image">
+                    <img src="assets/images/banners/hero.png" alt="Studio Akira Workshop">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="values-section">
+        <div class="container">
+            <div class="text-center">
+                <p class="section-label">OUR PHILOSOPHY</p>
+                <h2 class="section-title">Core Values</h2>
+            </div>
+
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">🌿</div>
+                    <h3>Sustainability First</h3>
+                    <p>We believe in treading lightly. Our materials are ethically sourced, renewable, and
+                        biodegradable.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">✨</div>
+                    <h3>Artisan Craftsmanship</h3>
+                    <p>Every single candle is hand-poured in small batches to ensure meticulous quality and care.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🤍</div>
+                    <h3>Pure Ingredients</h3>
+                    <p>No paraffins, no phthalates, no hidden toxins. Just pure, natural goodness for your home.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3 class="footer-logo">studio akira</h3>
+                    <p>Handcrafted natural candles made with love and care.</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Information</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul class="footer-links">
+                        <li><a href="#" onclick="requireLogin('collections'); return false;">All Products</a></li>
+                        <li><a href="#" onclick="requireLogin('collections'); return false;">Collections</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Account</h4>
+                    <ul class="footer-links">
+                        <li><a href="#" onclick="requireLogin('profile'); return false;">My Profile</a></li>
+                        <li><a href="#" onclick="requireLogin('orders'); return false;">My Orders</a></li>
+                        <li><a href="#" onclick="requireLogin('cart'); return false;">Shopping Cart</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Studio Akira. Natural Handcrafted Candles. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+        // Profile dropdown toggle
+        function toggleProfileMenu(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function (event) {
+            const menu = document.getElementById('profileMenu');
+            if (menu && menu.classList.contains('show')) {
+                if (!event.target.closest('.navbar-profile-dropdown')) {
+                    menu.classList.remove('show');
+                }
+            }
+        });
+
+        // Login modal logic
+        function openLoginModal() {
+            // Implement modal open logic or redirect
+            window.location.href = 'index.html'; // Fallback to index for login
+        }
+
+        // Require Login wrapper
+        function requireLogin(dest) {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // Determine path based on destination
+                    let path = '';
+                    switch (dest) {
+                        case 'shop':
+                        case 'collections': path = 'customer/products.html'; break;
+                        case 'orders': path = 'customer/orders.html'; break;
+                        case 'cart': path = 'customer/cart.html'; break;
+                        case 'profile': path = 'customer/profile.html'; break;
+                        default: path = 'customer/home.html';
+                    }
+                    window.location.href = path;
+                } else {
+                    window.location.href = 'index.html'; // Or open login modal
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
