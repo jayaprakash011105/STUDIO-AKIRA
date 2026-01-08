@@ -213,9 +213,19 @@
 
             unsubStats = db.collection('orders').onSnapshot(ordersSnap => {
                 let totalRevenue = 0;
-                ordersSnap.forEach(doc => totalRevenue += (doc.data().totalAmount || 0));
+                ordersSnap.forEach(doc => {
+                    const data = doc.data();
+                    if (data && data.totalAmount) {
+                        totalRevenue += parseFloat(data.totalAmount) || 0;
+                    }
+                });
                 document.getElementById('totalOrders').textContent = ordersSnap.size;
                 document.getElementById('totalRevenue').textContent = formatPrice(totalRevenue);
+            }, error => {
+                console.error('Stats Sync Error:', error);
+                // Even if stats fail, show consistent UI
+                document.getElementById('totalOrders').textContent = 'Error';
+                document.getElementById('totalRevenue').textContent = 'Error';
             });
 
             // Independent User Sync

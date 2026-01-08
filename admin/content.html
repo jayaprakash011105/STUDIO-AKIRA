@@ -20,6 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <style>
         .theme-grid {
@@ -208,6 +209,30 @@
             gap: 1rem;
             align-items: center;
             margin-bottom: 1rem;
+        }
+
+        .upload-overlay.uploading {
+            display: flex !important;
+            opacity: 1 !important;
+        }
+
+        .url-warning {
+            display: none;
+            color: #d63031;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .url-warning.show {
+            display: block;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #ccc !important;
+            border-color: #ccc !important;
         }
     </style>
 </head>
@@ -482,18 +507,28 @@
             // Helper to generate input based on field name and value
             const generateInput = (key, value, label) => {
                 if (key.toLowerCase().includes('image')) {
+                    const previewId = `img-${key}`;
+                    const warningId = `warning-${key}`;
                     return `
                         <div class="form-group">
                             <label class="form-label">${label}</label>
                             <div class="image-preview-container" id="preview-${key}">
-                                <img src="${value ? cms.fixPath(value) : '../assets/images/placeholder.png'}" id="img-${key}">
-                                <div class="upload-overlay" onclick="document.getElementById('file-${key}').click()">
-                                    <span>Change Image</span>
+                                <img src="${value ? cms.fixPath(value) : '../assets/images/placeholder.png'}" id="${previewId}">
+                                <div class="upload-overlay" id="overlay-${key}" onclick="document.getElementById('file-${key}').click()">
+                                    <span>✨ Change Image</span>
                                     <div class="progress-bar"><div class="progress-fill" id="progress-${key}"></div></div>
                                 </div>
                             </div>
-                            <input type="file" id="file-${key}" style="display:none;" onchange="uploadImage('${key}', this.files[0])">
-                            <input type="hidden" id="edit-${key}" value="${value || ''}">
+                            <input type="file" id="file-${key}" style="display:none;" onchange="uploadCMSImage('${key}', this.files[0])">
+                            <div style="margin-top: 10px;">
+                                <label class="form-label" style="font-size: 0.8rem;">Direct Image URL</label>
+                                <input type="text" class="form-input" id="edit-${key}" value="${value || ''}" 
+                                    placeholder="https://example.com/image.jpg"
+                                    oninput="updateCMSPreview('${previewId}', '${warningId}', this.value)">
+                                <div id="${warningId}" class="url-warning">
+                                    ⚠️ This looks like a page link, not a direct image.
+                                </div>
+                            </div>
                         </div>
                     `;
                 } else if (key === 'description' || key === 'text') {
@@ -533,18 +568,25 @@
                             const innerLabel = innerKey.charAt(0).toUpperCase() + innerKey.slice(1);
 
                             if (innerKey.toLowerCase().includes('image')) {
+                                const previewId = `img-${f}-${idx}-${innerKey}`;
+                                const warningId = `warning-${f}-${idx}-${innerKey}`;
                                 html += `
                                     <div class="form-group">
                                         <label class="form-label">${innerLabel}</label>
                                         <div class="image-preview-container" id="preview-${f}-${idx}-${innerKey}" style="height: 120px;">
-                                            <img src="${innerValue ? cms.fixPath(innerValue) : '../assets/images/placeholder.png'}" id="img-${f}-${idx}-${innerKey}">
-                                            <div class="upload-overlay" onclick="document.getElementById('file-${f}-${idx}-${innerKey}').click()">
-                                                <span>Change</span>
+                                            <img src="${innerValue ? cms.fixPath(innerValue) : '../assets/images/placeholder.png'}" id="${previewId}">
+                                            <div class="upload-overlay" id="overlay-${f}-${idx}-${innerKey}" onclick="document.getElementById('file-${f}-${idx}-${innerKey}').click()">
+                                                <span>✨ Change</span>
                                                 <div class="progress-bar"><div class="progress-fill" id="progress-${f}-${idx}-${innerKey}"></div></div>
                                             </div>
                                         </div>
-                                        <input type="file" id="file-${f}-${idx}-${innerKey}" style="display:none;" onchange="uploadImageArray('${f}', ${idx}, '${innerKey}', this.files[0])">
-                                        <input type="hidden" class="array-input" data-array="${f}" data-idx="${idx}" data-key="${innerKey}" id="edit-${f}-${idx}-${innerKey}" value="${innerValue || ''}">
+                                        <input type="file" id="file-${f}-${idx}-${innerKey}" style="display:none;" onchange="uploadCMSImageArray('${f}', ${idx}, '${innerKey}', this.files[0])">
+                                        <div style="margin-top: 8px;">
+                                            <input type="text" class="form-input array-input" data-array="${f}" data-idx="${idx}" data-key="${innerKey}" 
+                                                id="edit-${f}-${idx}-${innerKey}" value="${innerValue || ''}" placeholder="Direct URL"
+                                                oninput="updateCMSPreview('${previewId}', '${warningId}', this.value)">
+                                            <div id="${warningId}" class="url-warning">⚠️ Non-image link</div>
+                                        </div>
                                     </div>
                                 `;
                             } else {
@@ -561,20 +603,50 @@
             });
 
             html += `<div style="display: flex; gap: 12px; margin-top: 2rem;">
-                <button type="submit" class="btn-premium btn-premium-primary" style="flex: 2;">Save Masterpiece</button>
+                <button type="submit" id="saveCMSBtn" class="btn-premium btn-premium-primary" style="flex: 2;">Save Masterpiece</button>
                 <button type="button" class="btn-premium btn-premium-outline" style="flex: 1; border-color: #ff7675; color: #ff7675;" onclick="removeSection('${s.id}')">Delete</button>
                 <button type="button" class="btn-premium btn-premium-outline" style="flex: 1;" onclick="closeModal()">Back</button>
             </div></form>`;
             form.innerHTML = html;
         }
 
-        async function uploadImageArray(arrayKey, idx, fieldKey, file) {
+        function updateCMSPreview(previewId, warningId, url) {
+            const preview = document.getElementById(previewId);
+            const warning = document.getElementById(warningId);
+            const saveBtn = document.getElementById('saveCMSBtn');
+
+            if (!url) {
+                preview.src = '../assets/images/placeholder.png';
+                warning.classList.remove('show');
+                return;
+            }
+
+            const isPageLink = url.includes('pin.it') || (url.includes('pinterest.com') && !url.match(/\.(jpg|jpeg|png|webp|gif)/i));
+            if (isPageLink) warning.classList.add('show');
+            else warning.classList.remove('show');
+
+            preview.src = url;
+            if (saveBtn) saveBtn.disabled = false;
+        }
+
+        async function uploadCMSImageArray(arrayKey, idx, fieldKey, file) {
             if (!file) return;
             const progressFill = document.getElementById(`progress-${arrayKey}-${idx}-${fieldKey}`);
             const previewImg = document.getElementById(`img-${arrayKey}-${idx}-${fieldKey}`);
             const hiddenInput = document.getElementById(`edit-${arrayKey}-${idx}-${fieldKey}`);
+            const overlay = document.getElementById(`overlay-${arrayKey}-${idx}-${fieldKey}`);
+            const saveBtn = document.getElementById('saveCMSBtn');
+
+            // Local Preview
+            const reader = new FileReader();
+            reader.onload = (e) => previewImg.src = e.target.result;
+            reader.readAsDataURL(file);
 
             try {
+                if (saveBtn) saveBtn.disabled = true;
+                overlay.classList.add('uploading');
+                progressFill.style.width = '0%';
+
                 const storageRef = storage.ref(`cms/${Date.now()}_${file.name}`);
                 const uploadTask = storageRef.put(file);
 
@@ -586,17 +658,24 @@
                     (error) => {
                         console.error("Upload failed", error);
                         showToast("Upload failed", "error");
+                        if (saveBtn) saveBtn.disabled = false;
+                        overlay.classList.remove('uploading');
                     },
                     async () => {
-                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                        hiddenInput.value = downloadURL;
-                        previewImg.src = downloadURL;
-                        showToast("Image uploaded!", "success");
+                        try {
+                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                            hiddenInput.value = downloadURL;
+                            previewImg.src = downloadURL;
+                            showToast("Image uploaded!", "success");
+                        } catch (e) { }
+                        if (saveBtn) saveBtn.disabled = false;
+                        overlay.classList.remove('uploading');
                     }
                 );
             } catch (e) {
                 console.error(e);
                 showToast("Upload failed", "error");
+                if (saveBtn) saveBtn.disabled = false;
             }
         }
 
@@ -627,13 +706,24 @@
             }
         }
 
-        async function uploadImage(key, file) {
+        async function uploadCMSImage(key, file) {
             if (!file) return;
             const progressFill = document.getElementById(`progress-${key}`);
             const previewImg = document.getElementById(`img-${key}`);
             const hiddenInput = document.getElementById(`edit-${key}`);
+            const overlay = document.getElementById(`overlay-${key}`);
+            const saveBtn = document.getElementById('saveCMSBtn');
+
+            // Local Preview
+            const reader = new FileReader();
+            reader.onload = (e) => previewImg.src = e.target.result;
+            reader.readAsDataURL(file);
 
             try {
+                if (saveBtn) saveBtn.disabled = true;
+                overlay.classList.add('uploading');
+                progressFill.style.width = '0%';
+
                 const storageRef = storage.ref(`cms/${Date.now()}_${file.name}`);
                 const uploadTask = storageRef.put(file);
 
@@ -645,17 +735,24 @@
                     (error) => {
                         console.error("Upload failed", error);
                         showToast("Upload failed", "error");
+                        if (saveBtn) saveBtn.disabled = false;
+                        overlay.classList.remove('uploading');
                     },
                     async () => {
-                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                        hiddenInput.value = downloadURL;
-                        previewImg.src = downloadURL;
-                        showToast("Image uploaded!", "success");
+                        try {
+                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                            hiddenInput.value = downloadURL;
+                            previewImg.src = downloadURL;
+                            showToast("Image uploaded!", "success");
+                        } catch (e) { }
+                        if (saveBtn) saveBtn.disabled = false;
+                        overlay.classList.remove('uploading');
                     }
                 );
             } catch (e) {
                 console.error(e);
                 showToast("Upload failed", "error");
+                if (saveBtn) saveBtn.disabled = false;
             }
         }
 

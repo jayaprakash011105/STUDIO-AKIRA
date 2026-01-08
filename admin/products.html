@@ -20,6 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <style>
         .product-grid {
@@ -177,6 +178,91 @@
             border-color: var(--admin-accent);
             box-shadow: 0 4px 12px rgba(107, 138, 107, 0.2);
         }
+
+        /* Image Management Styles */
+        .image-preview-container {
+            width: 100%;
+            height: 200px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            background: #f8f9fa;
+            border: 2px dashed #edf2f7;
+            margin-bottom: 20px;
+        }
+
+        .image-preview-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(2px);
+        }
+
+        .image-preview-container:hover .upload-overlay {
+            opacity: 1;
+        }
+
+        .progress-bar {
+            width: 80%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--admin-accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .upload-overlay.uploading {
+            opacity: 1 !important;
+            display: flex !important;
+        }
+
+        .upload-overlay.uploading .progress-bar {
+            display: block;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #ccc !important;
+            border-color: #ccc !important;
+        }
+
+        .url-warning {
+            display: none;
+            color: #d63031;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .url-warning.show {
+            display: block;
+        }
     </style>
 </head>
 
@@ -291,6 +377,28 @@
             <h2 id="modalTitle" style="margin-top: 0; font-family: 'Playfair Display', serif;">Add New Product</h2>
             <form id="productForm" onsubmit="saveProduct(event)">
                 <div class="form-group">
+                    <label class="form-label">Product Image</label>
+                    <div class="image-preview-container">
+                        <img src="../assets/images/products/lavender-candle.png" id="productImgPreview">
+                        <div class="upload-overlay" onclick="document.getElementById('productImageInput').click()">
+                            <span>✨ Change Masterpiece Image</span>
+                            <div class="progress-bar" id="productUploadProgress">
+                                <div class="progress-fill" id="productUploadFill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="file" id="productImageInput" style="display: none;" accept="image/*"
+                        onchange="uploadProductImage(this.files[0])">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Or Paste Image URL (e.g. Pinterest)</label>
+                    <input type="text" class="form-input" id="productImageUrl"
+                        placeholder="https://example.com/image.jpg" oninput="validateAndPreviewUrl(this.value)">
+                    <div id="productUrlWarning" class="url-warning">
+                        ⚠️ This looks like a page link, not a direct image. Preview may not show.
+                    </div>
+                </div>
+                <div class="form-group">
                     <label class="form-label">Product Name</label>
                     <input type="text" class="form-input" id="productName" placeholder="e.g. Midnight Jasmine" required>
                 </div>
@@ -299,15 +407,26 @@
                     <textarea class="form-input" id="productDescription" rows="3"
                         placeholder="Describe the soul of this candle..." required></textarea>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                     <div class="form-group">
-                        <label class="form-label">Price (₹)</label>
-                        <input type="number" class="form-input" id="productPrice" min="0" step="1" required>
+                        <label class="form-label">MRP (₹)</label>
+                        <input type="number" class="form-input" id="productMRP" min="0" step="1"
+                            oninput="calculateSellingPrice()">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Initial Stock</label>
-                        <input type="number" class="form-input" id="productStock" min="0" value="0" required>
+                        <label class="form-label">Discount (%)</label>
+                        <input type="number" class="form-input" id="productDiscount" min="0" max="100" step="1"
+                            oninput="calculateSellingPrice()">
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Selling Price (₹)</label>
+                        <input type="number" class="form-input" id="productPrice" min="0" step="1" required readonly
+                            style="background-color: #f8f9fa;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Initial Stock</label>
+                    <input type="number" class="form-input" id="productStock" min="0" value="0" required>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
@@ -327,7 +446,8 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 32px;">
-                    <button type="submit" class="btn-premium btn-premium-primary" style="flex: 2; height: 50px;">💾 Save
+                    <button type="submit" id="saveProductBtn" class="btn-premium btn-premium-primary"
+                        style="flex: 2; height: 50px;">💾 Save
                         Masterpiece</button>
                     <button type="button" class="btn-premium btn-premium-outline" style="flex: 1; height: 50px;"
                         onclick="closeProductModal()">Cancel</button>
@@ -392,11 +512,15 @@
 
             let html = '';
             filtered.forEach(product => {
-                const imageUrl = product.images && product.images[0] ? `../${product.images[0]}` : '../assets/images/products/lavender-candle.png';
+                let imgPath = '../assets/images/products/lavender-candle.png';
+                if (product.images && product.images[0]) {
+                    const img = product.images[0];
+                    imgPath = (img.startsWith('http') || img.startsWith('data:')) ? img : `../${img}`;
+                }
                 html += `
                 <div class="product-item">
                     <div class="product-image-container">
-                        <img src="${imageUrl}" alt="${product.name}" class="product-image" onerror="this.src='../assets/images/products/lavender-candle.png'">
+                        <img src="${imgPath}" alt="${product.name}" class="product-image" onerror="this.src='../assets/images/products/lavender-candle.png'">
                         <div class="product-badge">
                             ${getStatusBadge(product.status)}
                         </div>
@@ -433,6 +557,10 @@
             editingProductId = null;
             document.getElementById('modalTitle').textContent = 'Add New Product';
             document.getElementById('productForm').reset();
+            document.getElementById('productImageInput').value = '';
+            document.getElementById('productImgPreview').src = '../assets/images/products/lavender-candle.png';
+            document.getElementById('productImageUrl').value = 'assets/images/products/lavender-candle.png';
+            document.getElementById('saveProductBtn').disabled = false;
             document.getElementById('productModal').classList.add('show');
         }
 
@@ -443,15 +571,35 @@
             document.getElementById('modalTitle').textContent = 'Edit Product';
             document.getElementById('productName').value = product.name;
             document.getElementById('productDescription').value = product.description || '';
+            document.getElementById('productMRP').value = product.originalPrice || product.price;
+            document.getElementById('productDiscount').value = product.discountPercentage || 0;
             document.getElementById('productPrice').value = product.price;
             document.getElementById('productCategory').value = product.category;
             document.getElementById('productStock').value = product.stock || 0;
             document.getElementById('productStatus').value = product.status;
+
+            const imageUrl = product.images && product.images[0] ? product.images[0] : 'assets/images/products/lavender-candle.png';
+            document.getElementById('productImgPreview').src = (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) ? imageUrl : `../${imageUrl}`;
+            document.getElementById('productImageUrl').value = imageUrl;
+            document.getElementById('productImageInput').value = '';
+            document.getElementById('saveProductBtn').disabled = false;
+
             document.getElementById('productModal').classList.add('show');
+        }
+
+        function calculateSellingPrice() {
+            const mrp = parseFloat(document.getElementById('productMRP').value) || 0;
+            const discount = parseFloat(document.getElementById('productDiscount').value) || 0;
+
+            if (mrp > 0) {
+                const sellingPrice = Math.round(mrp - (mrp * discount / 100));
+                document.getElementById('productPrice').value = sellingPrice;
+            }
         }
 
         function closeProductModal() {
             document.getElementById('productModal').classList.remove('show');
+            document.getElementById('saveProductBtn').disabled = false;
             editingProductId = null;
         }
 
@@ -460,10 +608,13 @@
             const data = {
                 name: document.getElementById('productName').value,
                 description: document.getElementById('productDescription').value,
+                originalPrice: parseFloat(document.getElementById('productMRP').value) || 0,
+                discountPercentage: parseFloat(document.getElementById('productDiscount').value) || 0,
                 price: parseFloat(document.getElementById('productPrice').value),
                 category: document.getElementById('productCategory').value,
                 stock: parseInt(document.getElementById('productStock').value),
                 status: document.getElementById('productStatus').value,
+                images: [document.getElementById('productImageUrl').value],
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -474,7 +625,6 @@
                     showToast('Collection updated', 'success');
                 } else {
                     data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    data.images = ['assets/images/products/lavender-candle.png'];
                     await db.collection('products').add(data);
                     showToast('New candle added to collection', 'success');
                 }
@@ -498,6 +648,87 @@
                 showToast('Failed to delete', 'error');
             } finally {
                 showLoading(false);
+            }
+        }
+
+        function validateAndPreviewUrl(url) {
+            const preview = document.getElementById('productImgPreview');
+            const warning = document.getElementById('productUrlWarning');
+
+            if (!url) {
+                preview.src = '../assets/images/products/lavender-candle.png';
+                warning.classList.remove('show');
+                return;
+            }
+
+            // Simple check if it's a known non-image link pattern
+            const isPinterestPage = url.includes('pin.it') || (url.includes('pinterest.com') && !url.match(/\.(jpg|jpeg|png|webp|gif)/i));
+
+            if (isPinterestPage) {
+                warning.classList.add('show');
+            } else {
+                warning.classList.remove('show');
+            }
+
+            preview.src = url;
+            // Also ensure save button is enabled if they are manually editing URL
+            document.getElementById('saveProductBtn').disabled = false;
+        }
+
+        async function uploadProductImage(file) {
+            if (!file) return;
+
+            const preview = document.getElementById('productImgPreview');
+            const urlInput = document.getElementById('productImageUrl');
+            const overlay = document.querySelector('.image-preview-container .upload-overlay');
+            const progressFill = document.getElementById('productUploadFill');
+            const saveBtn = document.getElementById('saveProductBtn');
+
+            // 1. Show local preview immediatey
+            const reader = new FileReader();
+            reader.onload = (e) => preview.src = e.target.result;
+            reader.readAsDataURL(file);
+
+            try {
+                // 2. Prepare UI
+                overlay.classList.add('uploading');
+                saveBtn.disabled = true;
+                progressFill.style.width = '0%';
+
+                const storageRef = storage.ref(`products/${Date.now()}_${file.name}`);
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressFill.style.width = progress + '%';
+                    },
+                    (error) => {
+                        console.error('Upload Error:', error);
+                        showToast('Image upload failed', 'error');
+                        overlay.classList.remove('uploading');
+                        saveBtn.disabled = false;
+                    },
+                    async () => {
+                        try {
+                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                            urlInput.value = downloadURL;
+                            preview.src = downloadURL;
+                            overlay.classList.remove('uploading');
+                            document.getElementById('productUrlWarning').classList.remove('show');
+                            saveBtn.disabled = false;
+                            showToast('Image uploaded successfully', 'success');
+                        } catch (e) {
+                            console.error('URL Fetch Error:', e);
+                            saveBtn.disabled = false;
+                        }
+                    }
+                );
+            } catch (error) {
+                console.error('Error initiating upload:', error);
+                showToast('Upload failed', 'error');
+                overlay.classList.remove('uploading');
+                saveBtn.disabled = false;
             }
         }
     </script>

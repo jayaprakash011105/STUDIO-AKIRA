@@ -18,7 +18,7 @@
     <style>
         .about-header {
             background: linear-gradient(135deg, var(--color-sage-light) 0%, var(--color-cream) 100%);
-            padding: 80px 0 60px;
+            padding: 60px 0 40px;
             margin-top: 70px;
             text-align: center;
         }
@@ -37,40 +37,40 @@
 
         .story-image img {
             width: 100%;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
         .values-section {
             padding: 80px 0;
-            background: var(--color-background);
+            background: #f9f9f9;
         }
 
         .values-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 40px;
-            margin-top: 50px;
+            margin-top: 40px;
         }
 
         .value-card {
             background: white;
             padding: 40px;
-            border-radius: var(--radius-lg);
+            border-radius: 16px;
             text-align: center;
-            box-shadow: var(--shadow-md);
-            transition: all var(--transition-normal);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
         }
 
         .value-card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
         }
 
         .value-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
+            font-size: 2.5rem;
             color: var(--color-sage);
+            margin-bottom: 20px;
+            display: inline-block;
         }
 
         @media (max-width: 768px) {
@@ -123,32 +123,66 @@
 
     <!-- Dynamic Content Area -->
     <div id="cms-content">
-        <!-- About Header -->
+        <!-- Standard Header -->
         <section class="about-header">
             <div class="container">
-                <h1 style="font-size: 3.5rem; color: var(--color-sage-darker); margin-bottom: 20px;">Our Story</h1>
-                <p style="font-size: 1.2rem; color: var(--color-text-light); max-width: 600px; margin: 0 auto;">
-                    Crafting light, warmth, and serenity for your sanctuary.
-                </p>
+                <h1
+                    style="font-family: var(--font-heading); font-size: 3rem; color: var(--color-sage-darker); margin-bottom: 15px;">
+                    About Us</h1>
+                <p style="font-size: 1.1rem; color: var(--color-text-light);">Crafting light, warmth, and serenity for
+                    your sanctuary.</p>
             </div>
         </section>
 
-        <!-- Story Section -->
         <section class="story-section">
             <div class="container">
                 <div class="story-grid">
                     <div class="story-content">
-                        <p class="section-label">WHO WE ARE</p>
-                        <h2 class="section-title" style="text-align: left;">The Art of Slow Living</h2>
-                        <p style="margin-bottom: 20px; line-height: 1.8;">
+                        <span
+                            style="font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; color: #999; display: block; margin-bottom: 10px;">Who
+                            We Are</span>
+                        <h2
+                            style="font-family: var(--font-heading); font-size: 2.2rem; color: var(--color-sage-darker); margin-bottom: 20px;">
+                            The Art of Slow Living</h2>
+                        <p style="color: var(--color-text); line-height: 1.8; margin-bottom: 20px;">
                             Studio Akira began with a simple belief: that the objects we surround ourselves with
-                            effectively
-                            shape our daily rituals. What started as a small passion project has grown into a dedicated
-                            atelier crafting premium, sustainable candles.
+                            effectively shape our daily rituals.
+                        </p>
+                        <p style="color: var(--color-text); line-height: 1.8;">
+                            What started as a small passion project has grown into a dedicated atelier crafting premium,
+                            sustainable candles that bring peace and presence to your space.
                         </p>
                     </div>
                     <div class="story-image">
                         <img src="assets/images/banners/hero.png" alt="Studio Akira Workshop">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="values-section">
+            <div class="container">
+                <div style="text-align: center; margin-bottom: 50px;">
+                    <h2 style="font-family: var(--font-heading); font-size: 2rem; color: var(--color-sage-darker);">Our
+                        Values</h2>
+                </div>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <span class="value-icon">🌿</span>
+                        <h3 style="margin-bottom: 10px; color: var(--color-sage-dark);">Sustainable</h3>
+                        <p style="color: #666; font-size: 0.95rem;">Ethically sourced soy wax and natural essential
+                            oils.</p>
+                    </div>
+                    <div class="value-card">
+                        <span class="value-icon">✨</span>
+                        <h3 style="margin-bottom: 10px; color: var(--color-sage-dark);">Handcrafted</h3>
+                        <p style="color: #666; font-size: 0.95rem;">Poured in small batches in our local atelier.</p>
+                    </div>
+                    <div class="value-card">
+                        <span class="value-icon">🕊️</span>
+                        <h3 style="margin-bottom: 10px; color: var(--color-sage-dark);">Mindful</h3>
+                        <p style="color: #666; font-size: 0.95rem;">Designed to bring peace and presence to your space.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -202,10 +236,10 @@
     <script>
         // Initialize CMS
         cms.init().then(() => {
-            cms.loadContent('about').then(() => {
-                cms.renderSections('cms-content');
-                cms.renderNavigation('.navbar-menu');
-            });
+            // cms.loadContent('about').then(() => {
+            //     cms.renderSections('cms-content');
+            cms.renderNavigation('.navbar-menu');
+            // });
         });
 
         // Profile dropdown toggle

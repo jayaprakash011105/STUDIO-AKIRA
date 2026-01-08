@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - studio akira</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .checkout-header {
+            background: linear-gradient(135deg, var(--color-sage-light) 0%, var(--color-cream) 100%);
+            padding: 60px 0 40px;
+            margin-top: 70px;
+        }
+
+        .checkout-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+        }
+
+        .checkout-form-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .checkout-summary {
+            background: linear-gradient(135deg, var(--color-sage) 0%, var(--color-sage-dark) 100%);
+            color: white;
+            padding: 35px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 100px;
+        }
+
+        .checkout-summary h2 {
+            color: white;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+            margin-top: 15px;
+        }
+
+        @media (max-width: 968px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="home.html" class="navbar-logo">studio akira</a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="home.html" class="navbar-link">Home</a></li>
+                <li><a href="products.html" class="navbar-link">Collections</a></li>
+                <li><a href="../about.html" class="navbar-link">About</a></li>
+                <li><a href="../contact.html" class="navbar-link">Contact</a></li>
+                <li><a href="orders.html" class="navbar-link">Orders</a></li>
+            </ul>
+            <div class="navbar-right">
+                <a href="cart.html" class="navbar-icon" title="Cart" style="position: relative;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-count" style="display: none;">0</span>
+                </a>
+                <div class="navbar-profile-dropdown">
+                    <button class="navbar-icon" onclick="toggleProfileMenu(event)" title="Profile">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </button>
+                    <div class="profile-dropdown-menu" id="profileMenu">
+                        <a href="profile.html">Profile</a>
+                        <a href="#" onclick="logout(); return false;">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Checkout Header -->
+    <section class="checkout-header">
+        <div class="container">
+            <h1 style="text-align: center; font-size: 3rem; color: var(--color-sage-darker); margin-bottom: 15px;">
+                Checkout</h1>
+            <p style="text-align: center; color: var(--color-text-light); font-size: 1.1rem;">Complete your purchase</p>
+        </div>
+    </section>
+
+    <!-- Checkout Content -->
+    <div class="checkout-container">
+        <div class="checkout-grid">
+            <!-- Shipping Form -->
+            <div class="checkout-form-card">
+                <h2 style="margin-bottom: 25px; color: var(--color-sage-darker);">Shipping Details</h2>
+                <form id="checkoutForm" onsubmit="handleCheckout(event)">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="name" class="form-input" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="email" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" id="phone" class="form-input" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Address</label>
+                        <textarea id="address" class="form-textarea" required></textarea>
+                    </div>
+
+                    <h2 style="margin: 30px 0 20px; color: var(--color-sage-darker);">Payment Method</h2>
+                    <div class="form-group">
+                        <label class="form-label">Select Payment</label>
+                        <select id="paymentMethod" class="form-select" required>
+                            <option value="cod">Cash on Delivery (COD)</option>
+                            <option value="online">Online Payment (Mock)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="checkout-summary">
+                <h2>Your Order</h2>
+                <div id="order-items-summary">
+                    <!-- Items inserted here -->
+                </div>
+                <div class="summary-total">
+                    <span>Total</span>
+                    <span id="order-total">₹0</span>
+                </div>
+                <button type="submit" form="checkoutForm" class="btn btn-accent btn-large"
+                    style="width: 100%; margin-top: 25px; background: white; color: var(--color-sage-dark);">Place
+                    Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/customer.js"></script>
+
+    <script>
+        checkRole(['customer']).then(async user => {
+            if (user) {
+                // Prefill user data
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        const data = userDoc.data();
+                        document.getElementById('name').value = data.name || '';
+                        document.getElementById('email').value = data.email || user.email || '';
+                        document.getElementById('phone').value = data.phone || '';
+                        document.getElementById('address').value = data.address || '';
+                    }
+                } catch (e) {
+                    console.log('Error fetching user data', e);
+                }
+                loadCheckoutSummary();
+            }
+        });
+
+        async function loadCheckoutSummary() {
+            const cart = getCart();
+            const container = document.getElementById('order-items-summary');
+            let total = 0;
+
+            if (cart.length === 0) {
+                window.location.href = 'cart.html';
+                return;
+            }
+
+            for (const item of cart) {
+                try {
+                    const productDoc = await db.collection('products').doc(item.productId).get();
+                    if (productDoc.exists) {
+                        const product = productDoc.data();
+                        const itemTotal = product.price * item.quantity;
+                        total += itemTotal;
+
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'summary-item';
+                        itemDiv.innerHTML = `
+                            <span>${product.name} x ${item.quantity}</span>
+                            <span>${formatPrice(itemTotal)}</span>
+                        `;
+                        container.appendChild(itemDiv);
+                    }
+                } catch (error) {
+                    console.error('Error loading item:', error);
+                }
+            }
+
+            document.getElementById('order-total').textContent = formatPrice(total);
+        }
+
+        async function handleCheckout(event) {
+            event.preventDefault();
+
+            const orderData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                paymentMethod: document.getElementById('paymentMethod').value
+            };
+
+            await placeOrder(orderData);
+        }
+
+        // Dropdown Logic
+        function toggleProfileMenu(event) {
+            if (event) event.stopPropagation();
+            document.getElementById('profileMenu').classList.toggle('show');
+        }
+        window.onclick = function (event) {
+            if (!event.target.closest('.navbar-profile-dropdown')) {
+                document.getElementById('profileMenu').classList.remove('show');
+            }
+        }
+    </script>
+</body>
+
+</html>

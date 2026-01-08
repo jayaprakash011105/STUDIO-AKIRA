@@ -3,18 +3,72 @@
 // Shopping Cart Management (using localStorage)
 let cart = JSON.parse(localStorage.getItem('studioakira_cart')) || [];
 
-function addToCart(productId, quantity = 1) {
+function addToCart(productId, productDetails = {}) {
     const existingItem = cart.find(item => item.productId === productId);
 
     if (existingItem) {
-        existingItem.quantity += quantity;
+        existingItem.quantity += (productDetails.quantity || 1);
     } else {
-        cart.push({ productId, quantity });
+        cart.push({ productId, quantity: (productDetails.quantity || 1) });
     }
 
     localStorage.setItem('studioakira_cart', JSON.stringify(cart));
     updateCartCount();
-    showToast('Added to cart!', 'success');
+
+    // Show custom modal instead of simple toast
+    showAddedToCartModal(productDetails);
+}
+
+function showAddedToCartModal(details) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('cart-notification-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'cart-notification-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.3s ease;
+    `;
+
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    `;
+
+    content.innerHTML = `
+        <div style="font-size: 3rem; margin-bottom: 15px;">🛍️</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.5rem; color: var(--color-sage-darker); margin-bottom: 10px;">Added to Cart!</h3>
+        <p style="color: var(--color-text-light); margin-bottom: 25px;">${details.name || 'Item'} has been successfully added to your cart.</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="document.getElementById('cart-notification-modal').remove()" style="padding: 12px 24px; border: 2px solid var(--color-light-gray); background: white; border-radius: 30px; cursor: pointer; font-weight: 600; color: var(--color-text);">Continue Shopping</button>
+            <button onclick="window.location.href='cart.html'" style="padding: 12px 24px; border: none; background: linear-gradient(135deg, var(--color-sage) 0%, var(--color-sage-dark) 100%); border-radius: 30px; cursor: pointer; font-weight: 600; color: white;">View Cart</button>
+        </div>
+    `;
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
 }
 
 function removeFromCart(productId) {
@@ -52,6 +106,42 @@ function updateCartCount() {
         badge.textContent = cartCount;
         badge.style.display = cartCount > 0 ? 'inline-block' : 'none';
     });
+}
+
+// Wishlist Management
+let wishlist = JSON.parse(localStorage.getItem('studioakira_wishlist')) || [];
+
+function toggleWishlist(productId) {
+    const index = wishlist.indexOf(productId);
+    if (index === -1) {
+        wishlist.push(productId);
+        showToast('Added to wishlist', 'success');
+    } else {
+        wishlist.splice(index, 1);
+        showToast('Removed from wishlist', 'info');
+    }
+    localStorage.setItem('studioakira_wishlist', JSON.stringify(wishlist));
+    updateWishlistUI(productId);
+}
+
+function isInWishlist(productId) {
+    return wishlist.includes(productId);
+}
+
+function updateWishlistUI(productId = null) {
+    // If productId is provided, update specific button, else update all
+    if (productId) {
+        const btns = document.querySelectorAll(`.wishlist-btn[data-id="${productId}"]`);
+        btns.forEach(btn => {
+            if (isInWishlist(productId)) {
+                btn.classList.add('active');
+                btn.innerHTML = '❤️'; // Filled heart
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '🤍'; // Empty heart
+            }
+        });
+    }
 }
 
 // Initialize cart count on page load
@@ -92,11 +182,12 @@ async function loadCartItems() {
                 const itemTotal = product.price * item.quantity;
                 total += itemTotal;
 
-                const imageUrl = product.images && product.images[0] ? product.images[0] : 'assets/images/products/lavender-candle.png';
+                const rawImage = product.images && product.images[0] ? product.images[0] : 'assets/images/products/lavender-candle.png';
+                const imageUrl = (rawImage.startsWith('http') || rawImage.startsWith('data:')) ? rawImage : `../${rawImage}`;
 
                 html += `
           <div class="cart-item" data-product-id="${item.productId}">
-            <img src="../${imageUrl}" alt="${product.name}" class="cart-item-image">
+            <img src="${imageUrl}" alt="${product.name}" class="cart-item-image">
             <div class="cart-item-details">
               <h3>${product.name}</h3>
               <p class="cart-item-price">${formatPrice(product.price)}</p>
@@ -144,11 +235,16 @@ async function placeOrder(orderData) {
                 const itemTotal = product.price * item.quantity;
                 totalAmount += itemTotal;
 
+                // Get correct image URL
+                const rawImage = product.images && product.images[0] ? product.images[0] : 'assets/images/products/lavender-candle.png';
+
                 items.push({
                     productId: item.productId,
                     productName: product.name,
                     quantity: item.quantity,
-                    price: product.price
+                    price: product.price,
+                    image: rawImage,
+                    description: product.description || ''
                 });
             }
         }
