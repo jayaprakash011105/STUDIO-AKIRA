@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Tracks - STUDIO AKIRA</title>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/admin-new.css">
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body class="admin-body">
+    <aside class="admin-sidebar glass">
+        <div class="admin-logo">studio akira</div>
+        <nav class="admin-nav">
+            <div class="nav-group-label">Logistics Portal</div>
+            <a href="dashboard.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🚚</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="orders.html" class="admin-nav-item">
+                <span class="admin-nav-icon">📦</span>
+                <span>Pickup Hub</span>
+            </a>
+            <a href="tracking.html" class="admin-nav-item active">
+                <span class="admin-nav-icon">📍</span>
+                <span>Active Tracks</span>
+            </a>
+        </nav>
+        <div class="admin-nav-footer">
+            <a href="#" class="admin-nav-item" onclick="logout()">
+                <span class="admin-nav-icon">🚪</span>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-welcome">
+                <h1>Active Deliveries</h1>
+                <p>Track your current shipments and update milestones.</p>
+            </div>
+        </header>
+
+        <section class="queue-section glass">
+            <div class="queue-header">
+                <h2 style="margin: 0; font-size: 1.25rem;">My Ongoing Routes</h2>
+                <span class="badge badge-warning" id="activeCount">0 Active</span>
+            </div>
+            <div class="premium-table-container">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Address</th>
+                            <th>Status</th>
+                            <th>Last Update</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeList">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--admin-text-muted);">
+                                Syncing routes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        let currentUser;
+        checkRole(['delivery']).then(user => {
+            if (user) {
+                currentUser = user;
+                syncActiveTracks();
+            }
+        });
+
+        function syncActiveTracks() {
+            db.collection('orders')
+                .where('assignedToDelivery', '==', currentUser.uid)
+                .where('status', 'not-in', ['delivered', 'cancelled'])
+                .onSnapshot(snap => {
+                    const tbody = document.getElementById('activeList');
+                    document.getElementById('activeCount').textContent = `${snap.size} Active`;
+
+                    if (snap.empty) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">✨ No active deliveries. Claim some from the Pickup Hub!</td></tr>';
+                        return;
+                    }
+
+                    let html = '';
+                    snap.forEach(doc => {
+                        const order = doc.data();
+                        html += `
+                            <tr>
+                                <td style="font-weight: 600;">#${doc.id.substring(0, 8).toUpperCase()}</td>
+                                <td style="font-weight: 500;">${order.customerDetails?.name || 'Guest'}</td>
+                                <td style="font-size: 0.85rem;">${order.customerDetails?.address || 'N/A'}</td>
+                                <td>${getStatusBadge(order.status)}</td>
+                                <td style="font-size: 0.8rem; color: var(--admin-text-muted);">${formatDate(order.updatedAt)}</td>
+                                <td>
+                                    <div class="queue-actions">
+                                        ${getNextStatusBtn(doc.id, order.status)}
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                });
+        }
+
+        function getNextStatusBtn(orderId, currentStatus) {
+            if (currentStatus === 'shipped') {
+                return `<button class="btn-premium btn-premium-primary" onclick="updateStatus('${orderId}', 'out_for_delivery')">Out for Delivery</button>`;
+            } else if (currentStatus === 'out_for_delivery') {
+                return `<button class="btn-premium btn-premium-primary" onclick="updateStatus('${orderId}', 'delivered')">Mark Delivered</button>`;
+            }
+            return '';
+        }
+
+        async function updateStatus(orderId, nextStatus) {
+            const location = prompt(`Update location for ${nextStatus}:`, 'Local Distribution');
+            if (location === null) return;
+
+            try {
+                showLoading(true);
+                await db.collection('orders').doc(orderId).update({
+                    status: nextStatus,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    trackingUpdates: firebase.firestore.FieldValue.arrayUnion({
+                        status: nextStatus,
+                        location: location,
+                        timestamp: new Date()
+                    })
+                });
+                showToast(`Order updated to ${nextStatus.replace(/_/g, ' ')}!`, 'success');
+            } catch (error) {
+                console.error('Update error:', error);
+                showToast('Failed to update order', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+    </script>
+</body>
+
+</html>

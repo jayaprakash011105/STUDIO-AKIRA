@@ -392,6 +392,27 @@
                 </div>
 
                 <div class="detail-card">
+                    <div class="detail-label">Logistics & Tracking</div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 0.85rem; color: var(--admin-text-muted);">Assigned Partner:</div>
+                        <div style="font-weight: 600;">${order.assignedToDeliveryName || 'Not Assigned'}</div>
+                    </div>
+                    
+                    <div class="tracking-timeline" style="margin-top: 15px; border-left: 2px solid var(--admin-accent-light); padding-left: 20px;">
+                        ${order.trackingUpdates && order.trackingUpdates.length > 0 ?
+                    order.trackingUpdates.map(update => `
+                                <div style="position: relative; margin-bottom: 15px;">
+                                    <div style="position: absolute; left: -26px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--admin-accent);"></div>
+                                    <div style="font-weight: 600; font-size: 0.9rem;">${update.status.replace(/_/g, ' ').toUpperCase()}</div>
+                                    <div style="font-size: 0.8rem; color: var(--admin-text-muted);">📍 ${update.location || 'Unknown'} • ${formatDate(update.timestamp)}</div>
+                                </div>
+                            `).join('') :
+                    '<div style="font-size: 0.9rem; color: var(--admin-text-muted);">No tracking updates yet.</div>'
+                }
+                    </div>
+                </div>
+
+                <div class="detail-card">
                     <div class="detail-label">Order Actions</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
                         ${order.status === 'pending' ?

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - STUDIO AKIRA</title>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/admin-new.css">
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body class="admin-body">
+    <aside class="admin-sidebar glass">
+        <div class="admin-logo">studio akira</div>
+        <nav class="admin-nav">
+            <div class="nav-group-label">Manufacturer Portal</div>
+            <a href="dashboard.html" class="admin-nav-item">
+                <span class="admin-nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="orders.html" class="admin-nav-item">
+                <span class="admin-nav-icon">📦</span>
+                <span>Orders</span>
+            </a>
+            <a href="production.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🏭</span>
+                <span>Production</span>
+            </a>
+            <a href="inventory.html" class="admin-nav-item active">
+                <span class="admin-nav-icon">📦</span>
+                <span>Inventory</span>
+            </a>
+            <a href="batches.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🏷️</span>
+                <span>Batches</span>
+            </a>
+        </nav>
+        <div class="admin-nav-footer">
+            <a href="#" class="admin-nav-item" onclick="logout()">
+                <span class="admin-nav-icon">🚪</span>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-welcome">
+                <h1>Raw Materials</h1>
+                <p>Manage ingredients and packaging supplies.</p>
+            </div>
+            <button class="btn-premium btn-premium-primary" onclick="addMaterial()">➕ Add Material</button>
+        </header>
+
+        <section class="queue-section glass">
+            <div class="queue-header">
+                <h2 style="margin: 0; font-size: 1.25rem;">Stock Inventory</h2>
+                <span class="badge badge-info" id="inventoryCount">0 Items</span>
+            </div>
+            <div class="premium-table-container">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Material Name</th>
+                            <th>Category</th>
+                            <th>Current Stock</th>
+                            <th>Unit</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryList">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--admin-text-muted);">
+                                Syncing stock levels...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        checkRole(['manufacturer']).then(user => {
+            if (user) syncInventory();
+        });
+
+        function syncInventory() {
+            db.collection('rawMaterials').onSnapshot(snap => {
+                const tbody = document.getElementById('inventoryList');
+                document.getElementById('inventoryCount').textContent = `${snap.size} Items`;
+
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No inventory data found. Click "Add Material" to start.</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                snap.forEach(doc => {
+                    const item = doc.data();
+                    const status = item.stock <= (item.minStock || 5) ? 'Low' : 'OK';
+                    const badgeClass = status === 'Low' ? 'badge-error' : 'badge-success';
+
+                    html += `
+                        <tr>
+                            <td style="font-weight: 600;">${item.name}</td>
+                            <td>${item.category || 'General'}</td>
+                            <td style="font-weight: 700;">${item.stock}</td>
+                            <td>${item.unit || 'pcs'}</td>
+                            <td><span class="badge ${badgeClass}">${status}</span></td>
+                            <td>
+                                <button class="btn-premium btn-premium-outline" style="padding: 5px 10px;" onclick="updateStock('${doc.id}', 1)">+</button>
+                                <button class="btn-premium btn-premium-outline" style="padding: 5px 10px;" onclick="updateStock('${doc.id}', -1)">-</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            });
+        }
+
+        async function updateStock(id, delta) {
+            try {
+                const doc = await db.collection('rawMaterials').doc(id).get();
+                const currentStock = doc.data().stock || 0;
+                await db.collection('rawMaterials').doc(id).update({
+                    stock: Math.max(0, currentStock + delta),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (e) {
+                showToast('Failed to update stock', 'error');
+            }
+        }
+
+        async function addMaterial() {
+            const name = prompt('Material Name:');
+            if (!name) return;
+            const category = prompt('Category (Wax, Wick, Scent, Jar, etc.):');
+            const stock = parseInt(prompt('Initial Stock:')) || 0;
+            const unit = prompt('Unit (kg, g, pcs, liters):') || 'pcs';
+
+            try {
+                await db.collection('rawMaterials').add({
+                    name,
+                    category,
+                    stock,
+                    unit,
+                    minStock: 5,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast('Material added!', 'success');
+            } catch (e) {
+                showToast('Failed to add material', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

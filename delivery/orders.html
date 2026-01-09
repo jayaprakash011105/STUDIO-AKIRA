@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pickup Hub - STUDIO AKIRA</title>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/admin-new.css">
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body class="admin-body">
+    <aside class="admin-sidebar glass">
+        <div class="admin-logo">studio akira</div>
+        <nav class="admin-nav">
+            <div class="nav-group-label">Logistics Portal</div>
+            <a href="dashboard.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🚚</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="orders.html" class="admin-nav-item active">
+                <span class="admin-nav-icon">📦</span>
+                <span>Pickup Hub</span>
+            </a>
+            <a href="tracking.html" class="admin-nav-item">
+                <span class="admin-nav-icon">📍</span>
+                <span>Active Tracks</span>
+            </a>
+        </nav>
+        <div class="admin-nav-footer">
+            <a href="#" class="admin-nav-item" onclick="logout()">
+                <span class="admin-nav-icon">🚪</span>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-welcome">
+                <h1>Pickup Hub</h1>
+                <p>Packages ready for collection and delivery.</p>
+            </div>
+        </header>
+
+        <section class="queue-section glass">
+            <div class="queue-header">
+                <h2 style="margin: 0; font-size: 1.25rem;">Available for Pickup</h2>
+                <span class="badge badge-info" id="pickupCount">0 Packages</span>
+            </div>
+            <div class="premium-table-container">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Destination</th>
+                            <th>Customer</th>
+                            <th>Ready Since</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pickupList">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--admin-text-muted);">
+                                Syncing hub...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        let currentUser;
+        checkRole(['delivery']).then(user => {
+            if (user) {
+                currentUser = user;
+                syncPickupHub();
+            }
+        });
+
+        function syncPickupHub() {
+            db.collection('orders')
+                .where('status', 'in', ['packaged', 'shipped'])
+                .where('assignedToDelivery', '==', null)
+                .onSnapshot(snap => {
+                    const tbody = document.getElementById('pickupList');
+                    document.getElementById('pickupCount').textContent = `${snap.size} Packages`;
+
+                    if (snap.empty) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">✨ The hub is clear! No packages pending pickup.</td></tr>';
+                        return;
+                    }
+
+                    let html = '';
+                    snap.forEach(doc => {
+                        const order = doc.data();
+                        html += `
+                            <tr>
+                                <td style="font-weight: 600;">#${doc.id.substring(0, 8).toUpperCase()}</td>
+                                <td>${order.customerDetails?.city || 'Local Delivery'}</td>
+                                <td>${order.customerDetails?.name || 'Guest'}</td>
+                                <td style="font-size: 0.85rem; color: var(--admin-text-muted);">${formatDate(order.packagedAt || order.updatedAt)}</td>
+                                <td>
+                                    <button class="btn-premium btn-premium-primary" onclick="assignToMe('${doc.id}')">Assign to me</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                });
+        }
+
+        async function assignToMe(orderId) {
+            if (!confirm('Assign this order to yourself?')) return;
+            try {
+                showLoading(true);
+                await db.collection('orders').doc(orderId).update({
+                    assignedToDelivery: currentUser.uid,
+                    assignedToDeliveryName: currentUser.displayName || 'Delivery Partner',
+                    status: 'shipped', // Mark as shipped if not already
+                    deliveryStatus: 'assigned',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    trackingUpdates: firebase.firestore.FieldValue.arrayUnion({
+                        status: 'shipped',
+                        location: 'Studio Akira Warehouse',
+                        notes: 'Order assigned to delivery partner.',
+                        timestamp: new Date()
+                    })
+                });
+                showToast('Order assigned! Go to Active Tracks to manage.', 'success');
+            } catch (error) {
+                console.error('Assign error:', error);
+                showToast('Failed to assign order', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+    </script>
+</body>
+
+</html>

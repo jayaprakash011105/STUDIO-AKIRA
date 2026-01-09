@@ -4,234 +4,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Production Dashboard - STUDIO AKIRA</title>
-
+    <title>Production Overview - STUDIO AKIRA</title>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/components.css">
-
+    <link rel="stylesheet" href="../css/admin-new.css">
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 
-<body>
+<body class="admin-body">
     <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-logo">studio akira</div>
-        <ul class="sidebar-menu">
-            <li class="sidebar-item"><a href="dashboard.html" class="sidebar-link active">Dashboard</a></li>
-            <li class="sidebar-item"><a href="orders.html" class="sidebar-link">Production Queue</a></li>
-            <li class="sidebar-item"><a href="production.html" class="sidebar-link">Production Status</a></li>
-            <li class="sidebar-item"><a href="inventory.html" class="sidebar-link">Raw Materials</a></li>
-            <li class="sidebar-item"><a href="batches.html" class="sidebar-link">Batch Tracking</a></li>
-            <li class="sidebar-item"><a href="#" class="sidebar-link" onclick="logout()">Logout</a></li>
-        </ul>
+    <aside class="admin-sidebar glass">
+        <div class="admin-logo">studio akira</div>
+        <nav class="admin-nav">
+            <div class="nav-group-label">Manufacturer Portal</div>
+            <a href="dashboard.html" class="admin-nav-item active">
+                <span class="admin-nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="orders.html" class="admin-nav-item">
+                <span class="admin-nav-icon">📦</span>
+                <span>Orders</span>
+            </a>
+            <a href="production.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🏭</span>
+                <span>Production</span>
+            </a>
+            <a href="inventory.html" class="admin-nav-item">
+                <span class="admin-nav-icon">📦</span>
+                <span>Inventory</span>
+            </a>
+            <a href="batches.html" class="admin-nav-item">
+                <span class="admin-nav-icon">🏷️</span>
+                <span>Batches</span>
+            </a>
+        </nav>
+        <div class="admin-nav-footer">
+            <a href="#" class="admin-nav-item" onclick="logout()">
+                <span class="admin-nav-icon">🚪</span>
+                <span>Logout</span>
+            </a>
+        </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <h1>Production Dashboard</h1>
-        <p class="mb-lg">Manage candle production and inventory</p>
+    <!-- Main Content Area -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-welcome">
+                <h1>Production Dashboard</h1>
+                <p>Welcome back, master of light and scent.</p>
+            </div>
+        </header>
 
-        <!-- Dashboard Stats -->
-        <div class="grid grid-4 gap-md mb-lg">
-            <div class="dashboard-card">
-                <div class="dashboard-card-title">Pending Orders</div>
-                <div class="dashboard-card-value" id="pendingOrders">0</div>
-                <div class="dashboard-card-subtitle">Awaiting production</div>
+        <!-- Stats Grid -->
+        <div class="admin-grid">
+            <div class="admin-card">
+                <div class="stat-header">
+                    <div class="stat-icon">🕒</div>
+                </div>
+                <div class="stat-value" id="pendingOrders">0</div>
+                <div class="stat-label">Pending Orders</div>
             </div>
-            <div class="dashboard-card"
-                style="background: linear-gradient(135deg, var(--color-info), var(--color-primary));">
-                <div class="dashboard-card-title">In Production</div>
-                <div class="dashboard-card-value" id="inProduction">0</div>
-                <div class="dashboard-card-subtitle">Currently making</div>
+
+            <div class="admin-card">
+                <div class="stat-header">
+                    <div class="stat-icon">🔥</div>
+                </div>
+                <div class="stat-value" id="inProduction">0</div>
+                <div class="stat-label">In Production</div>
             </div>
-            <div class="dashboard-card"
-                style="background: linear-gradient(135deg, var(--color-success), var(--color-sage));">
-                <div class="dashboard-card-title">Ready to Ship</div>
-                <div class="dashboard-card-value" id="readyToShip">0</div>
-                <div class="dashboard-card-subtitle">Packaged</div>
+
+            <div class="admin-card">
+                <div class="stat-header">
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-value" id="readyToShip">0</div>
+                <div class="stat-label">Ready to Ship</div>
             </div>
-            <div class="dashboard-card"
-                style="background: linear-gradient(135deg, var(--color-warning), var(--color-accent-gold));">
-                <div class="dashboard-card-title">Low Stock Items</div>
-                <div class="dashboard-card-value" id="lowStock">0</div>
-                <div class="dashboard-card-subtitle">Need reorder</div>
+
+            <div class="admin-card">
+                <div class="stat-header">
+                    <div class="stat-icon">⚠️</div>
+                </div>
+                <div class="stat-value" id="lowStock">0</div>
+                <div class="stat-label">Low Stock Alarms</div>
             </div>
         </div>
 
-        <!-- Product Demand -->
-        <div class="table-container mb-lg">
-            <h2 class="p-md" style="margin: 0; border-bottom: 1px solid var(--color-light-gray);">Product Demand
-                (SKU-wise)</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Quantity Needed</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="productDemand">
-                    <tr>
-                        <td colspan="4" class="text-center">Loading...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <!-- Product Demand -->
+            <section class="queue-section glass">
+                <div class="queue-header">
+                    <h2 style="margin: 0; font-size: 1.25rem;">Production Queue</h2>
+                    <a href="orders.html"
+                        style="color: var(--admin-accent); font-weight: 600; text-decoration: none; font-size: 0.9rem;">Manage
+                        All →</a>
+                </div>
+                <div class="premium-table-container">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productDemand">
+                            <tr>
+                                <td colspan="3"
+                                    style="text-align: center; padding: 2rem; color: var(--admin-text-muted);">Syncing
+                                    demand...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-        <!-- Recent Production Batches -->
-        <div class="table-container">
-            <h2 class="p-md" style="margin: 0; border-bottom: 1px solid var(--color-light-gray);">Recent Production
-                Batches</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Batch Number</th>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Status</th>
-                        <th>Started</th>
-                    </tr>
-                </thead>
-                <tbody id="recentBatches">
-                    <tr>
-                        <td colspan="5" class="text-center">No batches yet</td>
-                    </tr>
-                </tbody>
-            </table>
+            <!-- Recent Batches -->
+            <section class="queue-section glass">
+                <div class="queue-header">
+                    <h2 style="margin: 0; font-size: 1.25rem;">Active Batches</h2>
+                    <a href="production.html"
+                        style="color: var(--admin-accent); font-weight: 600; text-decoration: none; font-size: 0.9rem;">Update
+                        Status →</a>
+                </div>
+                <div class="premium-table-container">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Batch</th>
+                                <th>Product</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentBatches">
+                            <tr>
+                                <td colspan="3"
+                                    style="text-align: center; padding: 2rem; color: var(--admin-text-muted);">Syncing
+                                    activity...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
     </main>
-
-    <!-- Loading Spinner -->
-    <div id="loading-spinner">
-        <div class="spinner"></div>
-    </div>
 
     <!-- Scripts -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/utils.js"></script>
     <script>
-        // Check manufacturer authentication
         checkRole(['manufacturer']).then(user => {
-            if (user) {
-                loadDashboardData();
-            }
+            if (user) initDashboard();
         });
 
-        async function loadDashboardData() {
-            try {
-                // Load pending orders (assigned to manufacturer)
-                const pendingSnapshot = await db.collection('orders')
-                    .where('status', 'in', ['approved', 'pending'])
-                    .get();
-                document.getElementById('pendingOrders').textContent = pendingSnapshot.size;
-
-                // Load in production orders
-                const inProductionSnapshot = await db.collection('orders')
-                    .where('productionStatus', '==', 'in_production')
-                    .get();
-                document.getElementById('inProduction').textContent = inProductionSnapshot.size;
-
-                // Load ready to ship orders
-                const readySnapshot = await db.collection('orders')
-                    .where('productionStatus', '==', 'packaged')
-                    .get();
-                document.getElementById('readyToShip').textContent = readySnapshot.size;
-
-                // Load low stock items (placeholder - would need raw materials collection)
-                document.getElementById('lowStock').textContent = '0';
-
-                // Load product demand
-                loadProductDemand();
-
-                // Load recent batches
-                loadRecentBatches();
-
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-                showToast('Error loading dashboard data', 'error');
-            }
+        function initDashboard() {
+            startProductionSync();
         }
 
-        async function loadProductDemand() {
-            const ordersSnapshot = await db.collection('orders')
-                .where('status', 'in', ['approved', 'pending', 'in_production'])
-                .get();
+        function startProductionSync() {
+            // Pending Orders Sync
+            db.collection('orders')
+                .where('status', 'in', ['approved', 'pending'])
+                .onSnapshot(snap => {
+                    document.getElementById('pendingOrders').textContent = snap.size;
+                    updateProductDemand(snap);
+                });
 
+            // Production Status Sync
+            db.collection('orders')
+                .where('productionStatus', '==', 'in_production')
+                .onSnapshot(snap => {
+                    document.getElementById('inProduction').textContent = snap.size;
+                });
+
+            // Ready Sync
+            db.collection('orders')
+                .where('productionStatus', '==', 'packaged')
+                .onSnapshot(snap => {
+                    document.getElementById('readyToShip').textContent = snap.size;
+                });
+
+            // Batches Sync
+            db.collection('productionBatches')
+                .orderBy('startedAt', 'desc')
+                .limit(5)
+                .onSnapshot(snap => {
+                    const tbody = document.getElementById('recentBatches');
+                    if (snap.empty) {
+                        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 1.5rem;">No active batches</td></tr>';
+                        return;
+                    }
+                    let html = '';
+                    snap.forEach(doc => {
+                        const batch = doc.data();
+                        html += `
+                            <tr>
+                                <td>#${batch.batchNumber || doc.id.substring(0, 6)}</td>
+                                <td>${batch.productName || batch.productId}</td>
+                                <td>${getStatusBadge(batch.status)}</td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                });
+        }
+
+        function updateProductDemand(ordersSnapshot) {
             const tbody = document.getElementById('productDemand');
-
             if (ordersSnapshot.empty) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No pending production</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 1.5rem;">No pending demand</td></tr>';
                 return;
             }
 
-            // Aggregate product quantities
-            const productDemand = {};
+            const demand = {};
             ordersSnapshot.forEach(doc => {
                 const order = doc.data();
                 order.items?.forEach(item => {
-                    if (!productDemand[item.productId]) {
-                        productDemand[item.productId] = {
-                            name: item.productName,
-                            quantity: 0
-                        };
+                    if (!demand[item.productName]) {
+                        demand[item.productName] = { qty: 0 };
                     }
-                    productDemand[item.productId].quantity += item.quantity;
+                    demand[item.productName].qty += item.quantity || 1;
                 });
             });
 
             let html = '';
-            Object.entries(productDemand).forEach(([productId, data]) => {
-                const priority = data.quantity > 10 ? 'High' : data.quantity > 5 ? 'Medium' : 'Low';
-                const priorityBadge = priority === 'High' ? 'badge-error' : priority === 'Medium' ? 'badge-warning' : 'badge-info';
-
+            Object.entries(demand).forEach(([name, data]) => {
+                const priorityClass = data.qty > 10 ? 'badge-error' : data.qty > 5 ? 'badge-warning' : 'badge-info';
                 html += `
-          <tr>
-            <td>${data.name}</td>
-            <td>${data.quantity} units</td>
-            <td><span class="badge ${priorityBadge}">${priority}</span></td>
-            <td><span class="badge badge-warning">Pending</span></td>
-          </tr>
-        `;
+                    <tr>
+                        <td style="font-weight: 500;">${name}</td>
+                        <td>${data.qty} units</td>
+                        <td><span class="badge ${priorityClass}">${data.qty > 10 ? 'Urgent' : 'Normal'}</span></td>
+                    </tr>
+                `;
             });
             tbody.innerHTML = html;
-        }
-
-        async function loadRecentBatches() {
-            try {
-                const batchesSnapshot = await db.collection('productionBatches')
-                    .orderBy('startedAt', 'desc')
-                    .limit(5)
-                    .get();
-
-                const tbody = document.getElementById('recentBatches');
-
-                if (batchesSnapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No batches yet</td></tr>';
-                    return;
-                }
-
-                let html = '';
-                batchesSnapshot.forEach(doc => {
-                    const batch = doc.data();
-                    html += `
-            <tr>
-              <td>${batch.batchNumber}</td>
-              <td>${batch.productId}</td>
-              <td>${batch.quantity}</td>
-              <td>${getStatusBadge(batch.status)}</td>
-              <td>${formatDate(batch.startedAt)}</td>
-            </tr>
-          `;
-                });
-                tbody.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading batches:', error);
-            }
         }
     </script>
 </body>
