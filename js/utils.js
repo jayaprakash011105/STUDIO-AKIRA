@@ -148,3 +148,86 @@ function generateOrderId() {
 function generateBatchNumber() {
     return 'BATCH-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
 }
+
+// Global Authentication Interceptor
+function requireLogin(action) {
+    const user = auth.currentUser;
+    if (user) {
+        redirectToPortal(action);
+    } else {
+        // Save action to handle redirect after login
+        if (action) {
+            sessionStorage.setItem('postLoginAction', action);
+        }
+
+        if (typeof openLoginModal === 'function') {
+            openLoginModal();
+        } else {
+            // If on a subpage, go to root index
+            const isSubPage = window.location.pathname.includes('/customer/') ||
+                window.location.pathname.includes('/admin/') ||
+                window.location.pathname.includes('/manufacturer/') ||
+                window.location.pathname.includes('/delivery/');
+            window.location.href = isSubPage ? '../index.html' : 'index.html';
+        }
+    }
+}
+
+async function redirectToPortal(action) {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            window.location.href = '/index.html';
+            return;
+        }
+
+        // Check if there's a stored action if none provided
+        if (!action) {
+            action = sessionStorage.getItem('postLoginAction');
+            sessionStorage.removeItem('postLoginAction');
+        }
+
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        const userData = userDoc.exists ? userDoc.data() : { role: 'customer' };
+
+        // Determine site root based on current location
+        const isSubPage = window.location.pathname.includes('/customer/') ||
+            window.location.pathname.includes('/admin/') ||
+            window.location.pathname.includes('/manufacturer/') ||
+            window.location.pathname.includes('/delivery/');
+        const siteRoot = isSubPage ? '../' : '';
+
+        if (userData.role === 'admin') {
+            window.location.href = siteRoot + 'admin/dashboard.html';
+        } else if (userData.role === 'manufacturer') {
+            window.location.href = siteRoot + 'manufacturer/dashboard.html';
+        } else if (userData.role === 'delivery') {
+            window.location.href = siteRoot + 'delivery/dashboard.html';
+        } else {
+            // Customer routing based on action
+            let destination = 'customer/home.html';
+
+            if (action === 'shop' || action === 'explore' || action === 'collections') {
+                destination = 'customer/products.html';
+            } else if (action === 'cart') {
+                destination = 'customer/cart.html';
+            } else if (action === 'orders') {
+                destination = 'customer/orders.html';
+            } else if (action === 'profile') {
+                destination = 'customer/profile.html';
+            }
+
+            // Apply site root or handle if already in /customer/
+            if (window.location.pathname.includes('/customer/')) {
+                // If already in customer folder, remove the prefix
+                destination = destination.replace('customer/', '');
+                window.location.href = destination;
+            } else {
+                window.location.href = siteRoot + destination;
+            }
+        }
+    } catch (error) {
+        console.error('Portal redirect error:', error);
+        window.location.href = '/index.html';
+    }
+}

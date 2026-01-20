@@ -200,7 +200,7 @@ class ContentManagementSystem {
                             <h1 class="hero-main-title">${data.title || 'studio<br>akira'}</h1>
                             <p class="hero-main-tagline">${data.tagline || 'Where light becomes ritual.'}</p>
                             <p class="hero-main-description">${data.description || 'Handcrafted luxury candles that transform your space into a sanctuary'}</p>
-                            <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-primary btn-pill btn-large">${data.buttonText || 'Explore Collections'}</a>
+                            <button class="btn btn-primary btn-pill btn-large" onclick="requireLogin('explore')">${data.buttonText || 'Explore Collections'}</button>
                         </div>
                         <div class="hero-main-image">
                             <img src="${this.fixPath(data.image || 'assets/images/banners/Copilot_20260107_162550.png')}" alt="${data.imageAlt || 'Studio Akira Candles'}">
@@ -214,7 +214,7 @@ class ContentManagementSystem {
     renderCollectionsSection(data) {
         const collections = data.collections || [];
         const collectionsHTML = collections.map(col => `
-            <div class="benefit-card" style="cursor: pointer;" onclick="window.location.href='${this.fixPath(col.link || 'customer/products.html')}'">
+            <div class="benefit-card" style="cursor: pointer;" onclick="requireLogin('shop')">
                 <div class="benefit-image">
                     <img src="${this.fixPath(col.image)}" alt="${col.title}">
                 </div>
@@ -234,7 +234,7 @@ class ContentManagementSystem {
                         ${collectionsHTML}
                     </div>
                     <div class="text-center" style="margin-top: var(--spacing-xl);">
-                        <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-primary btn-large">${data.buttonText || 'View All Products'}</a>
+                        <button onclick="requireLogin('shop')" class="btn btn-primary btn-large">${data.buttonText || 'View All Products'}</button>
                     </div>
                 </div>
             </section>
@@ -250,7 +250,7 @@ class ContentManagementSystem {
                             <p class="section-label" style="color: var(--color-sage-dark);">${data.label || 'BEST SELLERS'}</p>
                             <h2 class="featured-collection-title">${data.title || 'Most Loved'}</h2>
                             <p class="featured-collection-text">${data.description || 'Our most chosen candles — trusted, gifted, and returned to again and again.'}</p>
-                            <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-primary btn-large">${data.buttonText || 'Shop Best Sellers'}</a>
+                            <button onclick="requireLogin('shop')" class="btn btn-primary btn-large">${data.buttonText || 'Shop Best Sellers'}</button>
                         </div>
                         <div class="featured-collection-image">
                             <img src="${this.fixPath(data.image || 'assets/images/banners/hero.png')}" alt="${data.imageAlt || 'Best Sellers Collection'}">
@@ -321,7 +321,7 @@ class ContentManagementSystem {
                             <p class="section-label" style="color: var(--color-sage-dark);">${data.label || 'GIFTING'}</p>
                             <h2 class="featured-collection-title">${data.title || 'Gifts That Glow Longer'}</h2>
                             <p class="featured-collection-text">${data.description || 'Our luxury gift boxes are thoughtfully curated to celebrate moments, emotions, and connections.'}</p>
-                            <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-primary btn-large">${data.buttonText || 'Shop Gift Sets'}</a>
+                            <button onclick="requireLogin('shop')" class="btn btn-primary btn-large">${data.buttonText || 'Shop Gift Sets'}</button>
                         </div>
                     </div>
                 </div>
@@ -364,7 +364,7 @@ class ContentManagementSystem {
                         ${reviewsHTML}
                     </div>
                     <div style="text-align: center; margin-top: var(--spacing-xl);">
-                        <a href="${this.fixPath(data.buttonLink || 'customer/products.html')}" class="btn btn-secondary btn-large">${data.buttonText || 'Read All Reviews'}</a>
+                        <button onclick="requireLogin('reviews')" class="btn btn-secondary btn-large">${data.buttonText || 'Read All Reviews'}</button>
                     </div>
                 </div>
             </section>
@@ -381,7 +381,7 @@ class ContentManagementSystem {
                     </p>
                     <div style="display: flex; gap: var(--spacing-sm); justify-content: center; flex-wrap: wrap; max-width: 500px; margin: 0 auto;">
                         <input type="email" placeholder="${data.placeholder || 'Enter your email'}" class="form-input" style="flex: 1; min-width: 250px;">
-                        <button class="btn" style="background: white; color: var(--color-sage-dark);">${data.buttonText || 'Subscribe'}</button>
+                        <button class="btn" style="background: white; color: var(--color-sage-dark);" onclick="requireLogin('subscribe')">${data.buttonText || 'Subscribe'}</button>
                     </div>
                 </div>
             </section>

@@ -164,18 +164,7 @@ document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
     }
 });
 
-// Redirect to appropriate portal
-function redirectToPortal(role) {
-    const portals = {
-        customer: '/customer/home.html',
-        admin: '/admin/dashboard.html',
-        manufacturer: '/manufacturer/dashboard.html',
-        delivery: '/delivery/dashboard.html'
-    };
-
-    const target = portals[role] || '/index.html';
-    window.location.href = target;
-}
+// Redirection is now handled by utils.js's redirectToPortal
 
 // Check if user is already logged in
 auth.onAuthStateChanged(async (user) => {

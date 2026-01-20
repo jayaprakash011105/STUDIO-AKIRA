@@ -386,7 +386,8 @@
         <div
           style="display: flex; gap: var(--spacing-sm); justify-content: center; flex-wrap: wrap; max-width: 500px; margin: 0 auto;">
           <input type="email" placeholder="Enter your email" class="form-input" style="flex: 1; min-width: 250px;">
-          <button class="btn" style="background: white; color: var(--color-sage-dark);">Subscribe</button>
+          <button class="btn" style="background: white; color: var(--color-sage-dark);"
+            onclick="requireLogin('subscribe')">Subscribe</button>
         </div>
       </div>
     </section>
@@ -523,44 +524,6 @@
   <script src="js/cms.js"></script>
 
   <script>
-    // Require login for all product-related actions
-    function requireLogin(action) {
-      auth.onAuthStateChanged(async (user) => {
-        if (user) {
-          try {
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            const userData = userDoc.exists ? userDoc.data() : { role: 'customer' };
-
-            // Redirect based on role and action
-            if (userData.role === 'admin') {
-              window.location.href = '/admin/dashboard.html';
-            } else if (userData.role === 'manufacturer') {
-              window.location.href = '/manufacturer/dashboard.html';
-            } else if (userData.role === 'delivery') {
-              window.location.href = '/delivery/dashboard.html';
-            } else {
-              // Standard customer redirects
-              if (action === 'shop' || action === 'explore' || action === 'collections') {
-                window.location.href = '/customer/home.html';
-              } else if (action === 'cart') {
-                window.location.href = '/customer/cart.html';
-              } else if (action === 'orders') {
-                window.location.href = '/customer/orders.html';
-              } else if (action === 'profile') {
-                window.location.href = '/customer/profile.html';
-              }
-            }
-          } catch (error) {
-            console.error('Redirect error:', error);
-            openLoginModal();
-          }
-        } else {
-          // User not logged in, show login modal
-          openLoginModal();
-        }
-      });
-    }
-
     // Profile dropdown toggle
     function toggleProfileMenu(event) {
       if (event) event.stopPropagation();
