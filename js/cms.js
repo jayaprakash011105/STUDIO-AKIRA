@@ -295,7 +295,7 @@ class ContentManagementSystem {
                         <h2 class="section-title">${data.title || 'Why Thousands Trust Our Candles'}</h2>
                         <p class="section-description" style="max-width: 700px; margin: 0 auto;">${data.description || 'Every candle we craft carries our commitment to quality, sustainability, and your well-being.'}</p>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-lg); margin-bottom: var(--spacing-xxl); text-align: center;">
+                    <div class="trust-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-lg); margin-bottom: var(--spacing-xxl); text-align: center;">
                         ${statsHTML}
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-xl);">
