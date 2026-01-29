@@ -360,7 +360,7 @@ class ContentManagementSystem {
                             <span style="color: var(--color-text-light);">${data.reviewCount || 'based on 2,847 reviews'}</span>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-lg);">
+                    <div class="reviews-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-lg);">
                         ${reviewsHTML}
                     </div>
                     <div style="text-align: center; margin-top: var(--spacing-xl);">
