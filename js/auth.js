@@ -76,10 +76,16 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
             return;
         }
 
-        // Verify role matches selection for non-admins
+        // Verify role matches selection
+        // Allow manufacturers and admins to log in via 'customer' role selection
+        const isInternalRole = userRole === 'manufacturer' || userRole === 'admin';
         if (userRole !== role) {
-            await auth.signOut();
-            throw new Error(`This account is not registered as a ${role}`);
+            if (role === 'customer' && isInternalRole) {
+                // Allowed - system will redirect based on userRole below
+            } else {
+                await auth.signOut();
+                throw new Error(`This account is not registered as a ${role}`);
+            }
         }
 
         // Check approval status for manufacturer and delivery roles
