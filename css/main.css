@@ -1105,7 +1105,7 @@ a:hover {
 
     /* Benefits Grid - 2 column square layout on tablet */
     .benefits-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: var(--spacing-md);
         padding: 0 16px;
     }
@@ -1118,6 +1118,13 @@ a:hover {
     .benefit-image {
         height: 180px;
         width: 100%;
+    }
+
+    /* Trust Stats Grid - 2 columns on tablet */
+    .trust-stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: var(--spacing-sm) !important;
+        padding: 0 16px;
     }
 
     /* Featured Collection */
@@ -1175,7 +1182,7 @@ a:hover {
 
     /* Benefits Grid - Single column on mobile */
     .benefits-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
         gap: var(--spacing-md);
         padding: 0 16px;
     }
@@ -1189,6 +1196,17 @@ a:hover {
     .benefit-image {
         height: 200px;
         width: 100%;
+    }
+
+    /* Trust Stats Grid - Single column on mobile */
+    .trust-stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: var(--spacing-sm) !important;
+        padding: 0 16px;
+    }
+
+    .trust-stats-grid>div {
+        padding: var(--spacing-sm) !important;
     }
 
     /* Testimonials - Horizontal Scroll */
