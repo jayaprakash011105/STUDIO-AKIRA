@@ -31,6 +31,13 @@
         <li><a href="contact.html" class="navbar-link">Contact</a></li>
         <li><a href="#" onclick="requireLogin('orders'); return false;" class="navbar-link">Orders</a></li>
       </ul>
+      <!-- Mobile Menu Toggle -->
+      <button class="navbar-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
       <div class="navbar-right">
         <a href="#" onclick="requireLogin('cart'); return false;" class="navbar-icon" title="Cart">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -52,6 +59,15 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="navbar-menu-mobile" id="mobileMenu">
+      <a href="index.html" class="navbar-link">Home</a>
+      <a href="#" onclick="requireLogin('collections'); return false;" class="navbar-link">Collections</a>
+      <a href="about.html" class="navbar-link">About</a>
+      <a href="contact.html" class="navbar-link">Contact</a>
+      <a href="#" onclick="requireLogin('orders'); return false;" class="navbar-link">Orders</a>
     </div>
   </nav>
 
@@ -529,6 +545,21 @@
       if (event) event.stopPropagation();
       const menu = document.getElementById('profileMenu');
       menu.classList.toggle('show');
+    }
+
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById('mobileMenu');
+      const toggleButton = document.querySelector('.navbar-toggle');
+      mobileMenu.classList.toggle('active');
+      toggleButton.classList.toggle('active');
+
+      // Prevent body scroll when menu is open
+      if (mobileMenu.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
     }
 
     // Close dropdown when clicking outside
