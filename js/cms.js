@@ -298,7 +298,7 @@ class ContentManagementSystem {
                     <div class="trust-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-lg); margin-bottom: var(--spacing-xxl); text-align: center;">
                         ${statsHTML}
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-xl);">
+                    <div class="trust-features-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-xl);">
                         ${featuresHTML}
                     </div>
                     <div style="display: flex; justify-content: center; gap: var(--spacing-xl); margin-top: var(--spacing-xxl); flex-wrap: wrap;">
