@@ -1103,18 +1103,21 @@ a:hover {
         margin-bottom: var(--spacing-lg);
     }
 
-    /* Benefits Grid */
+    /* Benefits Grid - 2 column square layout on tablet */
     .benefits-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: var(--spacing-md);
+        padding: 0 16px;
     }
 
     .benefit-card {
         padding: var(--spacing-lg) var(--spacing-sm);
+        width: 100%;
     }
 
     .benefit-image {
         height: 180px;
+        width: 100%;
     }
 
     /* Featured Collection */
@@ -1170,10 +1173,59 @@ a:hover {
         letter-spacing: 3px;
     }
 
-    /* Single column layouts */
+    /* Benefits Grid - Single column on mobile */
     .benefits-grid {
         grid-template-columns: 1fr;
         gap: var(--spacing-md);
+        padding: 0 16px;
+    }
+
+    .benefit-card {
+        padding: var(--spacing-md) var(--spacing-sm);
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .benefit-image {
+        height: 200px;
+        width: 100%;
+    }
+
+    /* Testimonials - Horizontal Scroll */
+    .testimonials-section {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .testimonials-images {
+        overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        gap: 16px;
+        padding: 0 16px 16px 16px;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .testimonial-avatar {
+        flex-shrink: 0;
+        scroll-snap-align: start;
+    }
+
+    /* Hide scrollbar but keep functionality */
+    .testimonials-images::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .testimonials-images::-webkit-scrollbar-track {
+        background: var(--color-sage-light);
+        border-radius: 2px;
+    }
+
+    .testimonials-images::-webkit-scrollbar-thumb {
+        background: var(--color-sage);
+        border-radius: 2px;
     }
 
     .footer-grid {
