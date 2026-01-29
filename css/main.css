@@ -1407,6 +1407,27 @@ a:hover {
         text-align: center !important;
     }
 
+    /* Navbar adjustments */
+    .navbar-container {
+        padding: 1rem 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .navbar-logo {
+        font-size: 1.5rem;
+    }
+
+    .navbar-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .navbar-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
     /* Buttons - Full width on mobile */
     .btn {
         width: 100%;
