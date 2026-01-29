@@ -3,7 +3,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 /* ========== CSS Reset ========== */
-* {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -126,6 +128,8 @@ a:hover {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--spacing-md);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* ========== Navigation - Elegant ========== */
@@ -1027,21 +1031,37 @@ a:hover {
         display: none;
     }
 
-    /* Container padding */
+    /* Container padding - critical for mobile */
     .container {
-        padding: 0 var(--spacing-sm);
+        padding-left: 16px;
+        padding-right: 16px;
         width: 100%;
         max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Reset all section padding to prevent overflow */
+    .hero-main,
+    .benefits-section,
+    .featured-collection-section,
+    .products-showcase-section,
+    .testimonials-section {
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 0;
+        margin-right: 0;
     }
 
     /* Hero Section */
     .hero-main {
-        padding: var(--spacing-lg) 0;
+        padding-top: var(--spacing-lg);
+        padding-bottom: var(--spacing-lg);
     }
 
     .hero-main-grid {
         grid-template-columns: 1fr;
         gap: var(--spacing-lg);
+        padding: 0;
     }
 
     .hero-main-content {
@@ -1163,7 +1183,9 @@ a:hover {
 
     /* Navbar adjustments */
     .navbar-container {
-        padding: 1rem var(--spacing-sm);
+        padding: 1rem 16px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .navbar-logo {
@@ -1178,6 +1200,16 @@ a:hover {
     .navbar-icon svg {
         width: 20px;
         height: 20px;
+    }
+
+    /* Footer - ensure proper padding */
+    .footer {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .footer-grid {
+        padding: 0 16px;
     }
 
     /* Buttons - Full width on mobile */
