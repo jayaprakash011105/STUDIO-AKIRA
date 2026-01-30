@@ -96,12 +96,17 @@
 
             .grid-2 {
                 grid-template-columns: 1fr !important;
-                gap: 0;
+                gap: 15px !important;
             }
 
             .form-input {
                 padding: 12px !important;
                 font-size: 1rem !important;
+            }
+
+            .checkout-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
 
             .checkout-summary {
@@ -119,6 +124,10 @@
                 padding: 14px !important;
                 border-radius: 30px !important;
             }
+
+            .mobile-nav-toggle {
+                display: block !important;
+            }
         }
     </style>
 </head>
@@ -128,6 +137,14 @@
     <nav class="navbar">
         <div class="navbar-container">
             <div class="navbar-left">
+                <button class="mobile-nav-toggle" onclick="toggleMobileMenu()"
+                    style="background: none; border: none; color: var(--color-sage-darker); cursor: pointer; padding: 5px; display: none;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
                 <a href="home.html" class="navbar-logo">studio akira</a>
             </div>
             <ul class="navbar-menu">
@@ -164,11 +181,40 @@
     </nav>
 
     <!-- Checkout Header -->
-    <section class="checkout-header">
+    <section class="checkout-header" style="margin-top: 60px; padding: 40px 0 20px;">
         <div class="container">
-            <h1 style="text-align: center; font-size: 3rem; color: var(--color-sage-darker); margin-bottom: 15px;">
-                Checkout</h1>
-            <p style="text-align: center; color: var(--color-text-light); font-size: 1.1rem;">Complete your purchase</p>
+            <!-- Checkout Progress -->
+            <div
+                style="display: flex; justify-content: space-between; max-width: 400px; margin: 0 auto 30px; position: relative; padding: 0 10px;">
+                <div
+                    style="position: absolute; top: 15px; left: 10%; right: 10%; height: 2px; background: var(--color-light-gray); z-index: 1;">
+                </div>
+                <div
+                    style="position: absolute; top: 15px; left: 10%; width: 50%; height: 2px; background: var(--color-sage); z-index: 2;">
+                </div>
+                <div
+                    style="position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <span
+                        style="width: 30px; height: 30px; background: var(--color-sage); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;">✓</span>
+                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--color-sage-dark);">Cart</span>
+                </div>
+                <div
+                    style="position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <span
+                        style="width: 30px; height: 30px; background: var(--color-sage-dark); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;">2</span>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-sage-darker);">Shipping</span>
+                </div>
+                <div
+                    style="position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <span
+                        style="width: 30px; height: 30px; background: var(--color-light-gray); color: var(--color-text-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;">3</span>
+                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--color-text-lighter);">Payment</span>
+                </div>
+            </div>
+            <h1 style="text-align: center; font-size: 2.2rem; color: var(--color-sage-darker); margin-bottom: 5px;">
+                Shipping Details</h1>
+            <p style="text-align: center; color: var(--color-text-light); font-size: 0.95rem;">Almost there! Tell us
+                where to send your glow.</p>
         </div>
     </section>
 
@@ -292,18 +338,37 @@
             </div>
 
             <!-- Order Summary -->
-            <div class="checkout-summary">
-                <h2>Your Order</h2>
-                <div id="order-items-summary">
+            <div class="checkout-summary" style="border: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0; font-size: 1.4rem;">Order Summary</h2>
+                    <span
+                        style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">Items</span>
+                </div>
+                <div id="order-items-summary"
+                    style="max-height: 200px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;">
                     <!-- Items inserted here -->
                 </div>
-                <div class="summary-total">
-                    <span>Total</span>
+                <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-bottom: 20px;">
+                    <div class="summary-item" style="color: rgba(255,255,255,0.8);">
+                        <span>Subtotal</span>
+                        <span id="subtotal-display">₹0</span>
+                    </div>
+                    <div class="summary-item" style="color: rgba(255,255,255,0.8);">
+                        <span>Shipping</span>
+                        <span>FREE</span>
+                    </div>
+                </div>
+                <div class="summary-total" style="border-top: 1px solid rgba(255,255,255,0.3); padding-top: 20px;">
+                    <span>Grand Total</span>
                     <span id="order-total">₹0</span>
                 </div>
-                <button type="submit" form="checkoutForm" class="btn btn-accent btn-large"
-                    style="width: 100%; margin-top: 25px; background: white; color: var(--color-sage-dark);">Place
-                    Order</button>
+                <button type="submit" form="checkoutForm" class="btn"
+                    style="width: 100%; margin-top: 25px; background: white; color: var(--color-sage-dark); height: 55px; border-radius: 50px; font-weight: 700; font-size: 1rem; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                    COMPLETE PURCHASE
+                </button>
+                <p
+                    style="text-align: center; font-size: 0.75rem; margin-top: 15px; opacity: 0.8; letter-spacing: 0.5px;">
+                    ✓ SECURE CHECKOUT</p>
             </div>
         </div>
     </div>
@@ -392,6 +457,7 @@
                 }
             }
 
+            document.getElementById('subtotal-display').textContent = formatPrice(total);
             document.getElementById('order-total').textContent = formatPrice(total);
         }
 

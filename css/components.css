@@ -503,13 +503,46 @@
         border-radius: 20px !important;
     }
 
-    /* Navigation Spacing */
+    /* Premium Mobile Navbar Layout */
     .navbar-container {
-        padding: 0 15px !important;
+        padding: 0 16px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        height: 60px !important;
+    }
+
+    .navbar-left {
+        flex: 0 0 40px !important;
+        display: flex !important;
+        justify-content: flex-start !important;
     }
 
     .navbar-logo {
-        font-size: 1.4rem !important;
+        position: absolute !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        font-size: 1.3rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    .navbar-right {
+        flex: 0 0 80px !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+        gap: 12px !important;
+    }
+
+    .navbar-menu {
+        display: none !important;
+    }
+
+    .mobile-nav-toggle {
+        display: flex !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
 
     /* Typography Adjustments */
