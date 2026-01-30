@@ -179,13 +179,13 @@
 
             .cart-container {
                 margin: 20px auto;
-                padding: 0 15px 180px;
-                /* Increased space for sticky summary */
+                padding: 0 15px 220px;
+                /* More space for the redesigned sticky bar */
             }
 
             .cart-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
+                gap: 15px;
             }
 
             .cart-items {
@@ -240,9 +240,18 @@
 
             .btn-remove {
                 position: absolute;
-                top: 10px;
+                top: 5px;
                 right: 0;
-                font-size: 24px;
+                font-size: 22px;
+                color: #999;
+                background: #f0f0f0;
+                width: 32px;
+                height: 32px;
+                line-height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .cart-summary {
@@ -250,36 +259,51 @@
                 bottom: 0;
                 left: 0;
                 width: 100%;
-                border-radius: 20px 20px 0 0;
-                padding: 20px;
+                border-radius: 24px 24px 0 0;
+                padding: 20px 20px 30px;
                 z-index: 1000;
-                box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
+                background: white;
+                color: var(--color-text);
+                box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.12);
+                border-top: 1px solid var(--color-light-gray);
             }
 
             .cart-summary h2 {
-                display: none;
-                /* Hide title on mobile sticky bar */
+                display: block;
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+                color: var(--color-sage-darker);
+                text-align: center;
+                border-bottom: 1px solid #f0f0f0;
+                padding-bottom: 10px;
             }
 
             .summary-row {
-                padding: 5px 0;
+                padding: 6px 0;
+                color: var(--color-text-light);
+                border-bottom: none;
             }
 
             .summary-total {
-                padding: 10px 0;
-                font-size: 1.3rem;
+                padding: 12px 0;
+                font-size: 1.4rem;
                 margin-top: 5px;
+                color: var(--color-sage-darker);
+                border-top: 1px solid #f0f0f0;
             }
 
             .cart-summary .btn-accent {
-                margin-top: 15px !important;
-                padding: 14px !important;
-                border-radius: 30px !important;
+                margin-top: 10px !important;
+                padding: 16px !important;
+                border-radius: 50px !important;
+                background: var(--color-sage-dark) !important;
+                color: white !important;
+                font-weight: 600;
+                font-size: 1rem;
             }
 
             .cart-summary .btn-outline-primary {
                 display: none !important;
-                /* Force hide continue shopping on mobile sticky bar */
             }
 
             .mobile-nav-toggle {
@@ -468,6 +492,15 @@
         function updateCartTotal(total) {
             document.getElementById('cart-subtotal').textContent = formatPrice(total);
             document.getElementById('cart-total').textContent = formatPrice(total);
+
+            // Update summary title with item count on mobile
+            if (window.innerWidth <= 600) {
+                const count = getCart().reduce((sum, item) => sum + item.quantity, 0);
+                const summaryTitle = document.querySelector('.cart-summary h2');
+                if (summaryTitle) {
+                    summaryTitle.textContent = `Order Summary (${count} ${count === 1 ? 'item' : 'items'})`;
+                }
+            }
         }
 
         function updateQuantity(productId, newQuantity) {
