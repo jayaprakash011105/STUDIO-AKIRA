@@ -179,12 +179,22 @@
 
             .cart-container {
                 margin: 20px auto;
-                padding: 0 15px 120px;
-                /* Space for sticky summary */
+                padding: 0 15px 180px;
+                /* Increased space for sticky summary */
+            }
+
+            .cart-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
 
             .cart-items {
                 padding: 20px 15px;
+            }
+
+            .cart-items h2 {
+                font-size: 1.5rem !important;
+                margin-bottom: 15px !important;
             }
 
             .cart-item {
@@ -268,8 +278,8 @@
             }
 
             .cart-summary .btn-outline-primary {
-                display: none;
-                /* Hide continue shopping on mobile sticky bar */
+                display: none !important;
+                /* Force hide continue shopping on mobile sticky bar */
             }
 
             .mobile-nav-toggle {
@@ -404,8 +414,15 @@
             <a href="products.html" class="btn btn-primary btn-large">Shop Now</a>
           </div>
         `;
+                document.querySelector('.cart-summary').style.display = 'none';
+                document.querySelector('.cart-grid').style.gridTemplateColumns = '1fr';
                 updateCartTotal(0);
                 return;
+            }
+
+            document.querySelector('.cart-summary').style.display = 'block';
+            if (window.innerWidth > 600) {
+                document.querySelector('.cart-grid').style.gridTemplateColumns = '1fr 400px';
             }
 
             container.innerHTML = '';
