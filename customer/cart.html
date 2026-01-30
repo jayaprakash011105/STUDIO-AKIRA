@@ -255,55 +255,93 @@
             }
 
             .cart-summary {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                border-radius: 24px 24px 0 0;
-                padding: 20px 20px 30px;
-                z-index: 1000;
-                background: white;
-                color: var(--color-text);
-                box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.12);
-                border-top: 1px solid var(--color-light-gray);
+                position: relative !important;
+                bottom: auto !important;
+                left: auto !important;
+                width: 100% !important;
+                border-radius: 20px !important;
+                padding: 30px 20px !important;
+                z-index: 1 !important;
+                background: white !important;
+                color: var(--color-text) !important;
+                box-shadow: var(--shadow-md) !important;
+                margin-top: 20px;
+                border: 1px solid var(--color-light-gray);
             }
 
             .cart-summary h2 {
                 display: block;
-                font-size: 1.1rem;
-                margin-bottom: 15px;
+                font-size: 1.5rem;
+                margin-bottom: 20px;
                 color: var(--color-sage-darker);
-                text-align: center;
-                border-bottom: 1px solid #f0f0f0;
+                text-align: left;
+                border-bottom: 2px solid var(--color-sage-light);
                 padding-bottom: 10px;
             }
 
             .summary-row {
-                padding: 6px 0;
+                padding: 10px 0;
                 color: var(--color-text-light);
-                border-bottom: none;
             }
 
             .summary-total {
-                padding: 12px 0;
-                font-size: 1.4rem;
-                margin-top: 5px;
+                padding: 15px 0;
+                font-size: 1.5rem;
+                margin-top: 10px;
                 color: var(--color-sage-darker);
-                border-top: 1px solid #f0f0f0;
             }
 
             .cart-summary .btn-accent {
-                margin-top: 10px !important;
-                padding: 16px !important;
-                border-radius: 50px !important;
-                background: var(--color-sage-dark) !important;
-                color: white !important;
-                font-weight: 600;
-                font-size: 1rem;
+                display: block;
+                width: 100%;
+                background: var(--color-sage-dark);
+                color: white;
+                margin-top: 20px !important;
             }
 
             .cart-summary .btn-outline-primary {
-                display: none !important;
+                display: block !important;
+                width: 100%;
+                margin-top: 10px !important;
+                border-color: var(--color-sage);
+                color: var(--color-sage-dark);
+                text-align: center;
+            }
+
+            /* Sticky Mobile Action Bar - Clean & Essential */
+            .sticky-checkout-bar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background: white;
+                padding: 15px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.08);
+                z-index: 2000;
+                border-top: 1px solid var(--color-light-gray);
+            }
+
+            .sticky-total-info .label {
+                font-size: 0.8rem;
+                color: var(--color-text-light);
+                display: block;
+            }
+
+            .sticky-total-info .amount {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: var(--color-sage-darker);
+            }
+
+            .sticky-checkout-bar .btn-accent {
+                padding: 12px 25px !important;
+                border-radius: 30px !important;
+                font-size: 0.95rem !important;
+                margin: 0 !important;
+                min-width: 160px;
             }
 
             .mobile-nav-toggle {
@@ -395,16 +433,21 @@
                 </div>
                 <div class="summary-total">
                     <span>Total</span>
-                    <span id="cart-total">₹0</span>
+                    <span id="cart-total-summary">₹0</span>
                 </div>
-                <button class="btn btn-accent btn-large"
-                    style="width: 100%; margin-top: 25px; background: white; color: var(--color-sage-dark);"
-                    onclick="proceedToCheckout()">Proceed to Checkout</button>
-                <a href="products.html" class="btn btn-outline-primary"
-                    style="width: 100%; margin-top: 15px; border-color: white; color: white; text-align: center; display: block;">Continue
-                    Shopping</a>
+                <button class="btn btn-accent btn-large" onclick="proceedToCheckout()">Proceed to Checkout</button>
+                <a href="products.html" class="btn btn-outline-primary">Continue Shopping</a>
             </div>
         </div>
+    </div>
+
+    <!-- Sticky Mobile Action Bar -->
+    <div id="mobile-sticky-bar" class="sticky-checkout-bar" style="display: none;">
+        <div class="sticky-total-info">
+            <span class="label">Total Amount</span>
+            <span class="amount" id="cart-total-sticky">₹0</span>
+        </div>
+        <button class="btn btn-accent" onclick="proceedToCheckout()">Checkout</button>
     </div>
 
     <!-- Loading Spinner -->
@@ -439,14 +482,19 @@
           </div>
         `;
                 document.querySelector('.cart-summary').style.display = 'none';
+                document.getElementById('mobile-sticky-bar').style.display = 'none';
                 document.querySelector('.cart-grid').style.gridTemplateColumns = '1fr';
                 updateCartTotal(0);
                 return;
             }
 
             document.querySelector('.cart-summary').style.display = 'block';
+            if (window.innerWidth <= 600) {
+                document.getElementById('mobile-sticky-bar').style.display = 'flex';
+            }
             if (window.innerWidth > 600) {
                 document.querySelector('.cart-grid').style.gridTemplateColumns = '1fr 400px';
+                document.getElementById('mobile-sticky-bar').style.display = 'none';
             }
 
             container.innerHTML = '';
@@ -490,8 +538,13 @@
         }
 
         function updateCartTotal(total) {
-            document.getElementById('cart-subtotal').textContent = formatPrice(total);
-            document.getElementById('cart-total').textContent = formatPrice(total);
+            const subtotalElem = document.getElementById('cart-subtotal');
+            const totalSummaryElem = document.getElementById('cart-total-summary');
+            const stickyTotalElem = document.getElementById('cart-total-sticky');
+
+            if (subtotalElem) subtotalElem.textContent = formatPrice(total);
+            if (totalSummaryElem) totalSummaryElem.textContent = formatPrice(total);
+            if (stickyTotalElem) stickyTotalElem.textContent = formatPrice(total);
 
             // Update summary title with item count on mobile
             if (window.innerWidth <= 600) {
