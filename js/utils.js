@@ -231,3 +231,67 @@ async function redirectToPortal(action) {
         window.location.href = '/index.html';
     }
 }
+// Mobile Navigation for Admin/Manufacturer/Delivery Portals
+function setupAdminMobileNav() {
+    const header = document.querySelector('.admin-header');
+    const sidebar = document.querySelector('.admin-sidebar');
+    if (!header || !sidebar) return;
+
+    // Add Overlay if not exists
+    let overlay = document.querySelector('.admin-sidebar-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'admin-sidebar-overlay';
+        document.body.appendChild(overlay);
+    }
+
+    // Add Toggle to Header if not exists
+    let toggle = document.querySelector('.mobile-nav-toggle');
+    if (!toggle) {
+        toggle = document.createElement('button');
+        toggle.className = 'mobile-nav-toggle';
+        toggle.innerHTML = '☰';
+        header.prepend(toggle);
+    }
+
+    // Add Close Button to Sidebar if not exists
+    let closeBtn = document.querySelector('.mobile-sidebar-close');
+    if (!closeBtn) {
+        closeBtn = document.createElement('button');
+        closeBtn.className = 'mobile-sidebar-close';
+        closeBtn.innerHTML = '&times;';
+        sidebar.prepend(closeBtn);
+    }
+
+    const toggleSidebar = (active) => {
+        sidebar.classList.toggle('active', active);
+        overlay.classList.toggle('active', active);
+        document.body.style.overflow = active ? 'hidden' : '';
+    };
+
+    toggle.onclick = () => toggleSidebar(true);
+    closeBtn.onclick = () => toggleSidebar(false);
+    overlay.onclick = () => toggleSidebar(false);
+
+    // Close on nav item click (mobile)
+    sidebar.querySelectorAll('.admin-nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                toggleSidebar(false);
+            }
+        });
+    });
+}
+
+// Global initialization
+const initPortals = () => {
+    if (document.body.classList.contains('admin-body')) {
+        setupAdminMobileNav();
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPortals);
+} else {
+    initPortals();
+}
