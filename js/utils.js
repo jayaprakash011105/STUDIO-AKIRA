@@ -295,3 +295,57 @@ if (document.readyState === 'loading') {
 } else {
     initPortals();
 }
+// Mobile Quick Navigation Menu
+function toggleMobileMenu() {
+    const existingMenu = document.getElementById('mobile-quick-menu');
+    if (existingMenu) {
+        existingMenu.classList.remove('active');
+        setTimeout(() => existingMenu.remove(), 300);
+        return;
+    }
+
+    const menu = document.createElement('div');
+    menu.id = 'mobile-quick-menu';
+    menu.style.cssText = `
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.98);
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
+        opacity: 0;
+        transform: translateY(100%);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+    `;
+
+    const isCustomerFolder = window.location.pathname.includes('/customer/');
+    const pathPrefix = isCustomerFolder ? '' : 'customer/';
+    const rootPrefix = isCustomerFolder ? '../' : '';
+
+    menu.innerHTML = `
+        <button onclick="toggleMobileMenu()" style="position: absolute; top: 30px; right: 30px; background: none; border: none; font-size: 2rem; color: var(--color-sage-darker);">&times;</button>
+        <div style="font-family: var(--font-heading); font-size: 2rem; color: var(--color-sage-dark); margin-bottom: 20px;">studio akira</div>
+        <a href="${isCustomerFolder ? 'home.html' : 'index.html'}" style="text-decoration: none; color: var(--color-sage-darker); font-size: 1.5rem; font-weight: 600;">Home</a>
+        <a href="${pathPrefix}products.html" style="text-decoration: none; color: var(--color-sage-darker); font-size: 1.5rem; font-weight: 600;">Collections</a>
+        <a href="${rootPrefix}about.html" style="text-decoration: none; color: var(--color-sage-darker); font-size: 1.5rem; font-weight: 600;">About Us</a>
+        <a href="${rootPrefix}contact.html" style="text-decoration: none; color: var(--color-sage-darker); font-size: 1.5rem; font-weight: 600;">Contact</a>
+        <a href="${pathPrefix}orders.html" style="text-decoration: none; color: var(--color-sage-darker); font-size: 1.5rem; font-weight: 600;">My Orders</a>
+        <div style="margin-top: 40px; display: flex; gap: 20px;">
+            <a href="${pathPrefix}cart.html" style="background: var(--color-sage-dark); color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 600;">View Cart</a>
+        </div>
+    `;
+
+    document.body.appendChild(menu);
+    // Allow animation frame
+    setTimeout(() => {
+        menu.style.opacity = '1';
+        menu.style.transform = 'translateY(0)';
+    }, 10);
+}

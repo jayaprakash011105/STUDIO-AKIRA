@@ -75,9 +75,49 @@
             margin-top: 15px;
         }
 
-        @media (max-width: 968px) {
-            .checkout-grid {
-                grid-template-columns: 1fr;
+        @media (max-width: 600px) {
+            .checkout-header {
+                padding: 40px 0 25px;
+                margin-top: 60px;
+            }
+
+            .checkout-header h1 {
+                font-size: 2.2rem !important;
+            }
+
+            .checkout-container {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .checkout-form-card {
+                padding: 20px 15px;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr !important;
+                gap: 0;
+            }
+
+            .form-input {
+                padding: 12px !important;
+                font-size: 1rem !important;
+            }
+
+            .checkout-summary {
+                padding: 25px 20px;
+                margin-top: 20px;
+                position: relative;
+                top: 0;
+            }
+
+            .summary-total {
+                font-size: 1.3rem;
+            }
+
+            .checkout-summary .btn-accent {
+                padding: 14px !important;
+                border-radius: 30px !important;
             }
         }
     </style>

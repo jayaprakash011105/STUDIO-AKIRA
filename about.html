@@ -73,9 +73,40 @@
             display: inline-block;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 600px) {
+            .about-header {
+                padding: 40px 0 25px;
+                margin-top: 60px;
+            }
+
+            .about-header h1 {
+                font-size: 2.2rem !important;
+            }
+
+            .story-section {
+                padding: 40px 0;
+            }
+
             .story-grid {
                 grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .story-content h2 {
+                font-size: 1.8rem !important;
+            }
+
+            .values-section {
+                padding: 40px 0;
+            }
+
+            .values-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .value-card {
+                padding: 30px 20px;
             }
         }
     </style>
