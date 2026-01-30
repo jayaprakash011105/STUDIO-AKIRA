@@ -137,34 +137,116 @@
         <div class="checkout-grid">
             <!-- Shipping Form -->
             <div class="checkout-form-card">
-                <h2 style="margin-bottom: 25px; color: var(--color-sage-darker);">Shipping Details</h2>
+                <h2 style="margin-bottom: 25px; color: var(--color-sage-darker);">Delivery Information</h2>
                 <form id="checkoutForm" onsubmit="handleCheckout(event)">
                     <div class="form-group">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" id="name" class="form-input" required>
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" id="name" class="form-input" placeholder="Enter your full name" required>
                     </div>
                     <div class="grid-2">
                         <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" id="email" class="form-input" required>
+                            <label class="form-label">Email *</label>
+                            <input type="email" id="email" class="form-input" placeholder="yourname@example.com"
+                                required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Phone Number</label>
-                            <input type="tel" id="phone" class="form-input" required>
+                            <label class="form-label">Indian Mobile Number *</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span
+                                    style="background: var(--color-sage-light); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-sage-light); font-weight: 600; color: var(--color-sage-dark);">+91</span>
+                                <input type="tel" id="phone" class="form-input" placeholder="10-digit number"
+                                    maxlength="10" required>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Address</label>
-                        <textarea id="address" class="form-textarea" required></textarea>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Flat / House No / Building *</label>
+                            <input type="text" id="address_line1" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Area / Colony / Street *</label>
+                            <input type="text" id="address_line2" class="form-input" required>
+                        </div>
                     </div>
 
-                    <h2 style="margin: 30px 0 20px; color: var(--color-sage-darker);">Payment Method</h2>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Landmark (Optional)</label>
+                            <input type="text" id="landmark" class="form-input" placeholder="e.g. Near Post Office">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City *</label>
+                            <input type="text" id="city" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">State *</label>
+                            <select id="state" class="form-input" required>
+                                <option value="">Select State</option>
+                                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                                <option value="Assam">Assam</option>
+                                <option value="Bihar">Bihar</option>
+                                <option value="Chhattisgarh">Chhattisgarh</option>
+                                <option value="Goa">Goa</option>
+                                <option value="Gujarat">Gujarat</option>
+                                <option value="Haryana">Haryana</option>
+                                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                <option value="Jharkhand">Jharkhand</option>
+                                <option value="Karnataka">Karnataka</option>
+                                <option value="Kerala">Kerala</option>
+                                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                                <option value="Manipur">Manipur</option>
+                                <option value="Meghalaya">Meghalaya</option>
+                                <option value="Mizoram">Mizoram</option>
+                                <option value="Nagaland">Nagaland</option>
+                                <option value="Odisha">Odisha</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="Rajasthan">Rajasthan</option>
+                                <option value="Sikkim">Sikkim</option>
+                                <option value="Tamil Nadu">Tamil Nadu</option>
+                                <option value="Telangana">Telangana</option>
+                                <option value="Tripura">Tripura</option>
+                                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                <option value="Uttarakhand">Uttarakhand</option>
+                                <option value="West Bengal">West Bengal</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pincode *</label>
+                            <input type="text" id="pincode" class="form-input" maxlength="6" pattern="[0-9]{6}"
+                                placeholder="6-digit Pincode" required>
+                        </div>
+                    </div>
+
+                    <h2 style="margin: 35px 0 15px; color: var(--color-sage-darker); font-size: 1.5rem;">Payment Method
+                    </h2>
+                    <div
+                        style="background: var(--color-sage-light); padding: 15px; border-radius: var(--radius-md); border: 1px dashed var(--color-sage); margin-bottom: 20px;">
+                        <p
+                            style="color: var(--color-sage-dark); font-weight: 600; font-size: 0.9rem; margin-bottom: 0;">
+                            ⚠️ Note: We currently offer Cash on Delivery (COD) for all orders.
+                        </p>
+                    </div>
+
                     <div class="form-group">
-                        <label class="form-label">Select Payment</label>
-                        <select id="paymentMethod" class="form-select" required>
-                            <option value="cod">Cash on Delivery (COD)</option>
-                            <option value="online">Online Payment (Mock)</option>
-                        </select>
+                        <label class="payment-method-label"
+                            style="display: flex; align-items: center; gap: 12px; padding: 20px; border: 2px solid var(--color-sage); border-radius: var(--radius-md); background: var(--color-cream); cursor: pointer;">
+                            <input type="radio" name="paymentMethod" value="cod" checked
+                                style="width: 20px; height: 20px;">
+                            <div>
+                                <strong style="color: var(--color-sage-darker);">Cash on Delivery (COD)</strong>
+                                <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-light);">Pay in cash
+                                    when your order arrives.</p>
+                            </div>
+                        </label>
                     </div>
                 </form>
             </div>
@@ -201,8 +283,36 @@
                         const data = userDoc.data();
                         document.getElementById('name').value = data.name || '';
                         document.getElementById('email').value = data.email || user.email || '';
-                        document.getElementById('phone').value = data.phone || '';
-                        document.getElementById('address').value = data.address || '';
+
+                        // Prefill phone (remove +91 for input)
+                        let phone = data.phone || '';
+                        if (phone.startsWith('+91')) phone = phone.substring(3);
+                        document.getElementById('phone').value = phone;
+
+                        // Prefill structured address if exists
+                        if (data.address) {
+                            const parts = data.address.split(', ');
+                            if (parts.length >= 4) {
+                                document.getElementById('address_line1').value = parts[0] || '';
+                                document.getElementById('address_line2').value = parts[1] || '';
+
+                                const cityPart = parts[parts.length - 3] || '';
+                                const statePinPart = parts[parts.length - 2] || '';
+
+                                document.getElementById('city').value = cityPart;
+
+                                const pincodeMatch = statePinPart.match(/(\d{6})/);
+                                if (pincodeMatch) {
+                                    document.getElementById('pincode').value = pincodeMatch[1];
+                                    document.getElementById('state').value = statePinPart.split(' - ')[0].trim();
+                                }
+
+                                // Handle landmark if present
+                                if (parts.length === 6) {
+                                    document.getElementById('landmark').value = parts[2];
+                                }
+                            }
+                        }
                     }
                 } catch (e) {
                     console.log('Error fetching user data', e);
@@ -245,15 +355,52 @@
             document.getElementById('order-total').textContent = formatPrice(total);
         }
 
+        // Restrict inputs
+        document.getElementById('phone').addEventListener('input', function (e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+        document.getElementById('pincode').addEventListener('input', function (e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
         async function handleCheckout(event) {
             event.preventDefault();
 
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+
+            const line1 = document.getElementById('address_line1').value;
+            const line2 = document.getElementById('address_line2').value;
+            const landmark = document.getElementById('landmark').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const pincode = document.getElementById('pincode').value;
+
+            // Basic fake address prevention: check minimum lengths
+            if (line1.length < 3 || line2.length < 5 || city.length < 3) {
+                showToast('Please enter a more descriptive address', 'error');
+                return;
+            }
+
+            if (!isValidPhone(phone)) {
+                showToast('Please enter a valid 10-digit Indian mobile number', 'error');
+                return;
+            }
+
+            if (!/^\d{6}$/.test(pincode)) {
+                showToast('Please enter a valid 6-digit Pincode', 'error');
+                return;
+            }
+
+            const fullAddress = `${line1}, ${line2}${landmark ? ', ' + landmark : ''}, ${city}, ${state} - ${pincode}, India`;
+
             const orderData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                address: document.getElementById('address').value,
-                paymentMethod: document.getElementById('paymentMethod').value
+                name,
+                email,
+                phone: '+91' + phone,
+                address: fullAddress,
+                paymentMethod: 'cod' // Force COD
             };
 
             await placeOrder(orderData);

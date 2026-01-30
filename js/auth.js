@@ -116,9 +116,9 @@ document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
     const password = document.getElementById('signupPassword').value;
     const role = document.getElementById('signupRole').value;
 
-    // Validate phone
+    // Validate phone (10-digit Indian standard registered number)
     if (!isValidPhone(phone)) {
-        showToast('Please enter a valid 10-digit mobile number', 'error');
+        showToast('Please enter a valid 10-digit Indian mobile number (e.g., 9876543210)', 'error');
         return;
     }
 
