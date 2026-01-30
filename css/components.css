@@ -505,6 +505,7 @@
 
     /* Premium Mobile Navbar Layout */
     .navbar-container {
+        position: relative !important;
         padding: 0 16px !important;
         display: flex !important;
         justify-content: space-between !important;

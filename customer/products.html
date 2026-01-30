@@ -178,6 +178,10 @@
                 padding: 2px 6px !important;
                 border-radius: 6px !important;
             }
+
+            .mobile-nav-toggle {
+                display: block !important;
+            }
         }
     </style>
 </head>
@@ -187,6 +191,14 @@
     <nav class="navbar">
         <div class="navbar-container">
             <div class="navbar-left">
+                <button class="mobile-nav-toggle" onclick="toggleMobileMenu()"
+                    style="background: none; border: none; color: var(--color-sage-darker); cursor: pointer; padding: 5px; display: none;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
                 <a href="home.html" class="navbar-logo">studio akira</a>
             </div>
             <ul class="navbar-menu">
