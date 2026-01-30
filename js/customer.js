@@ -104,7 +104,7 @@ function updateCartCount() {
     const cartBadges = document.querySelectorAll('.cart-count');
     cartBadges.forEach(badge => {
         badge.textContent = cartCount;
-        badge.style.display = cartCount > 0 ? 'inline-block' : 'none';
+        badge.style.display = cartCount > 0 ? 'flex' : 'none';
     });
 }
 
