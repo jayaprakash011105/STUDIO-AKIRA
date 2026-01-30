@@ -310,14 +310,13 @@
                 box-shadow: 0 4px 15px rgba(107, 142, 127, 0.3);
             }
 
+            .mobile-only-nav-toggle {
+                display: flex !important;
+                margin-right: 10px;
+            }
+
             .floating-menu-btn {
-                bottom: 110px;
-                right: 20px;
-                width: 50px;
-                height: 50px;
-                background: var(--color-sage-darker);
-                border-radius: 50%;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                display: none;
             }
         }
     </style>
@@ -347,6 +346,16 @@
                     <span class="cart-count" style="display: none;">0</span>
                 </a>
                 <div class="navbar-profile-dropdown">
+                    <!-- Hamburger Menu Toggle (Mobile Only) -->
+                    <button class="navbar-icon mobile-only-nav-toggle" onclick="toggleMobileMenu()" title="Menu"
+                        style="display: none;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
                     <button class="navbar-icon" onclick="toggleProfileMenu(event)" title="Profile">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -489,10 +498,6 @@
 
                         <p class="product-description" style="${vibeChipsHtml ? 'margin-top: 15px;' : ''}">${product.description || 'Handcrafted natural candle made with premium soy wax and essential oils.'}</p>
 
-                        <!-- Floating Menu (Mobile Only) -->
-                        <button class="floating-menu-btn" onclick="toggleMobileMenu()" title="Quick Navigation">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        </button>
                         
                         <div class="add-to-cart-section">
                             <div class="quantity-selector">
